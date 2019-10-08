@@ -1,0 +1,2 @@
+I"�<p>Docker可以通过 Dockerfile 的内容来<strong>自动构建镜像</strong>（<strong>引导脚本</strong>，作为命令行的扩展，类比Maven构建Java项目的pom文件）。</p>
+:ET

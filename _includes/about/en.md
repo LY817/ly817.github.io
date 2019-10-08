@@ -1,17 +1,47 @@
-### 初衷
-> **写这个博客,一方面是为了记录工作和学习中的一些总结/技术学习过程;另一方面也为了记录生活中的一些经历**
+> Your time is limited, so don’t waste it living someone else’s life. 
 
-### 关于本人
-**85后,♂️,💍,半路出家的程序员,热爱后端,喜欢编程,知识杂而不精,善于折腾并乐此不疲**  
-`2015-04-22`开始了人生中的第一行代码  
-`2015-12-10`开始了第一份程序员工作  
-周末通常在家撸代码或者带娃(辅助带娃...)  
-喜欢的音乐类型:[METAL](https://zh.wikipedia.org/zh/%E9%87%8D%E9%87%91%E5%B1%9E%E9%9F%B3%E4%B9%90),[RAP](https://zh.wikipedia.org/wiki/%E9%A5%92%E8%88%8C),[ROCK](https://zh.wikipedia.org/wiki/%E6%91%87%E6%BB%9A%E4%B9%90)  
-🎧:[gr10e](https://www.gradolabs.com/component/k2/item/46-gr10e),[sr80e](https://www.gradolabs.com/headphones/prestige-series/item/1-sr80e)  
-喜欢的手游:[崩坏学园2](https://zh.wikipedia.org/zh-hans/%E5%B4%A9%E5%9D%8F%E5%AD%A6%E5%9B%AD2),[万象物语](https://zh.wikipedia.org/zh/Sdorica_%E8%90%AC%E8%B1%A1%E7%89%A9%E8%AA%9E)    
-近期的学习和应用的技术:`持续集成`,[vue全家桶](https://github.com/vuejs/vue),`python`,`docker`  
-喜欢的Websites:[Google](https://google.com.hk),[维基百科](https://zh.wikipedia.org/zh-hans/%E9%A6%96%E9%A1%B5),[Stackoverflow](https://stackoverflow.com/),[知乎](https://zhihu.com),[v2ex](https://v2ex.com),[掘金](https://juejin.im/),[豆瓣](https://douban.com/)  
-常用的编辑器:[jetbrains系列](https://www.jetbrains.com/),[vscode](https://code.visualstudio.com/)  
-**非常喜欢** 使用[markdown](https://zh.wikipedia.org/wiki/Markdown)进行写作  
+Hi, I am _@huxpro_ (Huang, Xuan), a will-be [Facebook](https://www.facebook.com/) software engineer and a professed digital designer. My interests range from programming languages in general (type system, type-based formal verification, compiler construction, runtime system) to indurstial software engineering (web/mobile app development, user interface and UX, developer infra and DX). 
 
-![](https://lestat.b0.upaiyun.com/blog/dontgiveup.png)
+In the past, I worked on [Alitrip (Fliggy)](https://www.alitrip.com/) mobile and web apps under the [Alibaba Group](https://en.wikipedia.org/wiki/Alibaba_Group), found and lead front-end infrastructure team at a unicorn startup [Beijing Weiying (WePiao)](https://www.crunchbase.com/organization/beijing-weiying-technology), and helped [Ele.me](https://en.wikipedia.org/wiki/Ele.me) to upgrade their mobile web into [the first influential PWA (progressive web app) in China](https://medium.com/elemefe/upgrading-ele-me-to-progressive-web-app-2a446832e509).
+
+I studied BA, Digital Media Art at [Communication University of China](https://en.wikipedia.org/wiki/Communication_University_of_China) and MS, Computer Science at [Rochester Institute of Technology](https://en.wikipedia.org/wiki/Rochester_Institute_of_Technology), with a focus on programming languages theory and construction.
+
+
+##### My Programming Languages Spectrum
+
+I generally prefer languages that are close to ML ("Meta Language"), i.e. _mostly functional programming_. This should explain most of my picks e.g. JavaScript within dynamically-typed's, Scala within JVM's, Rust within unmanaged's. Other preferences such as typed over untyped, expressive over limited are no-brainers.
+
+> __Left-right__ is how much I prefer it.  __Top-down__ is how much I know it. __Versions__ are lower bounds.
+
+|     | 💔️           | ❤️ ️                 | ❤️❤️ ️                     | ❤️❤️❤️ ️               |
+| --- | ------------- | -------------------- | -------------------------- | ---------------------- |
+| 😅  | `PHP` `BASIC` | `C` `ObjC` `Prolog`  | `Kotlin` `Dart` `Asm`     | `Swift` `Agda` `Idris` |
+| 🧐  |               | `C++` `Hack` `Lisp*` | `C++11` `C#` `AS3`         | `Scala` `Rust`         |
+| 😏  | `Shell`       | `Java` `Python`      | `TypeScript` `Flow` `Wasm` | `Haskell` `Coq` `ML*`  |
+| 🤓  |               | `JavaScript`         | `EcmaScript6`              | `λ` `Λ` `Π` `Σ`        |
+
+> __`ML*`__: `OCaml` `ReasonML` `Standard ML`  
+> __`Lisp*`__: `Clojure` `Scheme` `Racket`
+
+
+##### Talks
+
+- [Upgrading to Progressive Web Apps][9] · [JSConf China Shanghai 2017](http://2017.jsconf.cn/)
+- Building Progressive Web Apps · [CSDI Guangzhou 2017](http://www.csdisummit.com/)
+- The State of Progressive Web App · GDG IO Redux Beijing 2017
+- PWA Rehashing · Baidu HQ Beijing 2017
+- [Service Worker 101][5] · GDG DevFest Beijing 2016
+- [Progressive Web Apps][4] · QCon Shanghai 2016
+- Progressive Web App in my POV · GDG IO Redux Beijing 2016
+- [CSS Still Sucks 2015][2] · 2015
+- [JavaScript Modularization Journey][1] · 2015
+
+[1]: //huangxuan.me/2015/07/09/js-module-7day/
+[2]: //huangxuan.me/2015/12/28/css-sucks-2015/
+[3]: //huangxuan.me/2016/06/05/pwa-in-my-pov/
+[4]: //huangxuan.me/2016/10/20/pwa-qcon2016/
+[5]: //huangxuan.me/2016/11/20/sw-101-gdgdf/
+[6]: https://yanshuo.io/assets/player/?deck=58ac8598b123db0067292f92 "PWA Rehashing"
+[7]: https://yanshuo.io/assets/player/?deck=593ad6fbfe88c2006a0a0d6d "The State of PWA"
+[8]: https://yanshuo.io/assets/player/?deck=594d673d570c357d0698a950 "Building PWA"
+[9]: //huangxuan.me/jsconfcn2017/

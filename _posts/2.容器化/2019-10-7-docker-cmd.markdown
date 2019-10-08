@@ -12,7 +12,6 @@ description:
 keywords:
 ---
 
-# docker命令行速查
 
 ![1524547418643](/img/in-post/docker/resources/1524547418643.png)
 

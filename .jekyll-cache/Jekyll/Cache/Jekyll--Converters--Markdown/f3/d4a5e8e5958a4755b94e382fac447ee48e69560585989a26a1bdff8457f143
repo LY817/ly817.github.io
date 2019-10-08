@@ -1,0 +1,188 @@
+I"$<p>Docker可以通过 Dockerfile 的内容来<strong>自动构建镜像</strong>（<strong>引导脚本</strong>，作为命令行的扩展，类比Maven构建Java项目的pom文件）。</p>
+
+<p>Dockerfile是一个包含创建镜像所有命令的文本文件，通过<strong>docker build</strong>命令可以根据 Dockerfile 的内容构建镜像，在介绍如何构建之前先介绍下 Dockerfile 的基本语法结构。</p>
+
+<p>根据Dockerfile的版本（文件差异），build生成的image id也不同</p>
+
+<p>每执行一行命令就会生成一层新的镜像</p>
+
+<p>DockerFile分为四部分组成：</p>
+
+<ul>
+  <li>基础镜像信息</li>
+  <li>维护者信息</li>
+  <li>镜像操作指令</li>
+  <li>容器启动时执行指令</li>
+</ul>
+
+<h3 id="基础准备相关指令">基础准备相关指令</h3>
+
+<h4 id="from-基于镜像--指定base-image">【FROM】 基于镜像  指定base image</h4>
+
+<div class="language-dockerfile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">FROM</span><span class="s"> &lt;image&gt;</span>
+</code></pre></div></div>
+
+<ul>
+  <li>FROM指定构建镜像的基础源镜像，如果本地没有指定的镜像，则会自动从     Docker 的公共库 pull 镜像下来。</li>
+  <li>FROM必须是 Dockerfile     中非注释行的第一个指令，即一个 Dockerfile 从FROM语句开始。</li>
+  <li>FROM可以在一个 Dockerfile     中出现多次，如果有需求在一个 Dockerfile 中创建多个镜像。</li>
+  <li>如果FROM语句没有指定镜像标签，则默认使用latest标签</li>
+  <li>如果用来制作基础镜像，使用 FROM scratch</li>
+</ul>
+
+<h4 id="label-定义镜像的元信息">【LABEL】 定义镜像的元信息</h4>
+
+<p>类似注释</p>
+
+<div class="language-dockerfile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">LABEL</span><span class="s"> maintainer="xxx@126.com"</span>
+<span class="k">LABEL</span><span class="s"> version="1.0"</span>
+<span class="k">LABEL</span><span class="s"> description="this is description"</span>
+</code></pre></div></div>
+
+<h4 id="maintainer-作者信息">【MAINTAINER 】作者信息</h4>
+
+<div class="language-dockerfile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">MAINTAINER</span><span class="s"> &lt;name&gt;</span>
+</code></pre></div></div>
+
+<p>指定创建镜像的用户</p>
+
+<h4 id="env声明环境变量">【ENV】声明环境变量</h4>
+
+<div class="language-dockerfile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">ENV</span><span class="s"> &lt;key&gt; &lt;value&gt;       # 只能设置一个变量</span>
+<span class="k">ENV</span><span class="s"> &lt;key&gt;=&lt;value&gt; ...   # 允许一次设置多个变量 用空格隔开</span>
+</code></pre></div></div>
+
+<p>指定一个环境变量，会被后续RUN指令使用，并在容器运行时保留</p>
+
+<ul>
+  <li>之后的dockerfile脚本中可以<strong>引用</strong></li>
+  <li>生成的容器中，系统的环境变量</li>
+</ul>
+
+<h4 id="user指定运行容器时的用户名或uid">【USER】指定运行容器时的用户名或UID</h4>
+
+<p>后续的RUN、CMD、ENTRYPOINT也会使用指定用户</p>
+
+<h4 id="workdir指定工作目录">【WORKDIR】指定工作目录</h4>
+
+<p>为后续的RUN、CMD、ENTRYPOINT指令配置工作目录,如果没有这个目录就会自动创建</p>
+
+<p>可以使用多个WORKDIR指令，后续命令如果参数是相对路径，则会基于之前命令指定的路径</p>
+
+<p>用WORKDIR代替以下命令</p>
+
+<div class="language-dockerfile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">RUN </span><span class="nb">cd</span> /xxx/xx
+<span class="k">RUN </span><span class="nb">mkdir</span> /xx/xx
+</code></pre></div></div>
+
+<h4 id="onbuild">【ONBUILD】</h4>
+
+<p>配置当所创建的镜像作为其它新创建镜像的基础镜像时，所执行的操作指令</p>
+
+<h4 id="add导入文件">【ADD】导入文件</h4>
+
+<div class="language-dockerfile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">ADD</span><span class="s"> &lt;src&gt;... &lt;dest&gt;</span>
+<span class="k">ADD</span><span class="s"> hom* /mydir/        # adds all files starting with "hom"</span>
+<span class="k">ADD</span><span class="s"> hom?.txt /mydir/    # ? is replaced withany single character</span>
+</code></pre></div></div>
+
+<p>ADD复制<strong>本地主机文件</strong>、目录或者<strong>远程文件</strong> URLS 从 并且添加到容器指定路径中</p>
+
+<p>支持通过GO 的正则模糊匹配【具体规则可参见 Go filepath.Match】</p>
+
+<p>路径必须是<strong>绝对路径</strong>，如果不存在，会自动创建对应目录</p>
+
+<p>或者路径必须是Dockerfile 所在路径的相对路径</p>
+
+<p><strong>如果是一个目录，只会复制目录下的内容，而目录本身则不会被复制</strong></p>
+
+<p>tips</p>
+
+<ul>
+  <li>ADD添加压缩文件时会自动<strong>解压缩</strong></li>
+  <li>
+    <p>ADD适用相对路径</p>
+
+    <p><img src="/img/in-post/docker/assets/1527314952114.png" alt="1527314952114" /></p>
+  </li>
+</ul>
+
+<h4 id="copy导入文件">【COPY】导入文件</h4>
+
+<div class="language-dockerfile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">COPY</span><span class="s"> &lt;src&gt;... &lt;dest&gt;</span>
+</code></pre></div></div>
+
+<p>COPY复制新文件或者目录从并且添加到容器指定路径中 。用法同ADD，<strong>唯一的不同是不能指定远程文件 URLS</strong></p>
+
+<h4 id="volume挂载">【VOLUME】挂载</h4>
+
+<div class="language-dockerfile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">VOLUME</span><span class="s"> ["/data"]</span>
+</code></pre></div></div>
+
+<p>本地主机或其他容器挂载的挂载点</p>
+
+<h4 id="expose暴露端口">【EXPOSE】暴露端口</h4>
+
+<div class="language-dockerfile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">EXPOSE</span><span class="s"> 22 80 8443</span>
+</code></pre></div></div>
+
+<p>告诉Docker 服务端容器对外映射的本地端口，需要在 docker run 的时候使用-p或者-P选项生效</p>
+
+<p>使用-P,主机会自动分配</p>
+
+<h3 id="执行类命令">执行类命令</h3>
+
+<h4 id="run镜像执行命令">【RUN】镜像执行命令</h4>
+
+<div class="language-dockerfile highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># shell格式 不需要用引号</span>
+<span class="k">RUN </span>apt-get <span class="nb">install</span> <span class="nt">-y</span> vim
+<span class="c"># Exec格式 指明运行的命令和该命令的参数</span>
+<span class="k">RUN </span><span class="o">[</span><span class="s2">"executable"</span>, <span class="s2">"param1"</span>, <span class="s2">"param2"</span><span class="o">]</span>
+</code></pre></div></div>
+
+<p>每条RUN指令将在当前镜像基础上执行指定命令，并<strong>提交为新的镜像</strong></p>
+
+<p><strong>每一个RUN执行都会创建一个新的镜像层（image layer）</strong></p>
+
+<p>后续的RUN都在之前RUN提交后的镜像为基础，镜像是分层的，可以通过一个镜像的任何一个历史提交点来创建，类似源码的版本控制</p>
+
+<p>尽量将多个命令合并成一行，<strong>避免无用分层</strong></p>
+
+<p><img src="/img/in-post/docker/assets/1527313971124.png" alt="1527313971124" /></p>
+
+<h4 id="cmd容器内执行命令">【CMD】容器内执行命令</h4>
+
+<p><strong>使用方式同RUN</strong></p>
+
+<p>CMD会设置<strong>容器启动后默认执行</strong>的命令和参数</p>
+
+<p>CMD指定在Dockerfile 中<strong>只能使用一次</strong>，如果有多个，则只有最后一个会生效。</p>
+
+<p>CMD的目的是<strong>为了在启动容器时提供一个默认的命令执行选项</strong></p>
+
+<p>如果用户启动容器时指定了运行的命令，则会覆<strong>盖掉CMD指定的命令</strong>:如果再run image时指定了其他命令，CMD命令会被忽略</p>
+
+<p>同理，可以通过空CMD获取docker run命令行末尾输入的参数，给容器启动后的ENTRYPOINT中的命令作为参数</p>
+
+<p>示例dockerfile 多用于工具型的应用</p>
+
+<p><img src="/img/in-post/docker/assets/1527327769610.png" alt="1527327769610" /></p>
+
+<p>CMD会<strong>在启动容器的时候执行，build时不执行</strong></p>
+
+<p>RUN只是<strong>在构建镜像的时候执行</strong>，后续镜像构建完成之后，启动容器就与RUN无关</p>
+
+<h4 id="entrypoint容器启动命令">【ENTRYPOINT】容器启动命令</h4>
+
+<p><strong>使用方式同RUN</strong></p>
+
+<p>让容器<strong>以应用程序或者服务的形式运行</strong></p>
+
+<p>配置容器启动后执行的命令，并且<strong>不可被 docker run提供的参数覆盖</strong></p>
+
+<p>CMD是可以被覆盖的</p>
+
+<p>如果需要覆盖，则可以使用docker run –entrypoint选项。</p>
+
+<p>每个 Dockerfile 中只能有一个ENTRYPOINT，当指定多个时，只有最后一个生效</p>
+:ET
