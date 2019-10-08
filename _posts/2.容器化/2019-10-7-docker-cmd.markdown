@@ -4,6 +4,7 @@ title: "docker命令行速查"
 tags:
 - docker
 - 总结
+- 文档
 date: 2019-10-07 21:18:26
 author:     "LuoYu"
 permalink:
@@ -15,7 +16,7 @@ keywords:
 
 ![1524547418643](/img/in-post/docker/resources/1524547418643.png)
 
-## 镜像管理
+### 镜像管理
 
 #### 【images】查看本地镜像
 
@@ -32,8 +33,6 @@ OPTIONS说明：
 - --no-trunc :显示完整的镜像信息
 - -q :只显示镜像ID
 
-
-
 #### 【rmi】删除本地镜像
 
 ```shell
@@ -44,8 +43,6 @@ OPTIONS说明：
 
 - -f :强制删除
 - --no-prune :不移除该镜像的过程镜像，默认移除
-
-
 
 #### 【build】使用Dockerfile创建镜像（到本地）
 
@@ -79,8 +76,6 @@ OPTIONS说明：
 - --rm :设置镜像成功后删除中间容器；
 - --shm-size :设置/dev/shm的大小，默认值是64M
 - --ulimit :Ulimit配置
-
-
 
 上下文路径
 
@@ -117,7 +112,7 @@ OPTIONS说明：
 - -c :应用docker 指令创建镜像
 - -m :提交时的说明文字
 
-## 仓库管理
+### 仓库管理
 
 #### 【login】登录
 
@@ -135,8 +130,6 @@ OPTIONS说明：
 
 - -u :登陆的用户名
 - -p :登陆的密码
-
-
 
 #### 【pull】从镜像仓库中拉取或者更新指定镜像
 
@@ -159,8 +152,6 @@ OPTIONS说明：
 
 - --disable-content-trust :忽略镜像的校验,默认开启
 
-
-
 #### 【search】从Docker Hub查找镜像
 
 ```shell
@@ -173,9 +164,7 @@ OPTIONS说明：
 - --no-trunc :显示完整的镜像描述
 - -s :列出收藏数不小于指定值的镜像
 
-
-
-## 容器管理
+### 容器管理
 
 #### 【create】创建一个新的容器但不启动它
 
@@ -209,9 +198,7 @@ OPTIONS说明：
 - --net="bridge": 指定容器的网络连接类型，支持 bridge/host/none/container 和自定义
 - --network birdge：同上
 
-
 - **--link=[]: 添加链接到另外一个或多个容器**的ip或别名
-
 
 - **--expose=[]: 开放一个端口或一组端口**；
 - **--ip 172.18.0.10：固定docker局域网分配的ip**
@@ -219,7 +206,6 @@ OPTIONS说明：
 - **-P:--publish-all 开放所有的端口到宿主机**
 
 文件
-
 
 - **-v:声明挂载的外部数据文件夹**
   - 将`/data`挂载到容器中，并绕过联合文件系统，我们可以在主机上直接操作该目录。任何在该镜像`/data`路径的文件将会被复制到Volume
@@ -254,8 +240,6 @@ OPTIONS说明：
 
 - -s :向容器发送一个信号
 
-
-
 #### 【rm】删除一个或多少容器
 
 ```shell
@@ -275,7 +259,7 @@ docker pause [OPTIONS] CONTAINER [CONTAINER...]
 docker unpause [OPTIONS] CONTAINER [CONTAINER...]
 ```
 
-## 容器操作
+### 容器操作
 
 #### 【exec】对运行中的容器执行命令或脚本
 
@@ -292,8 +276,6 @@ OPTIONS说明：
 - -d :分离模式: 在后台运行
 - -i :即使没有附加也保持STDIN 打开
 - -t :分配一个伪终端 **需要指定使用的shell**
-
-
 
 #### 【ps】获取容器/镜像的元数据
 

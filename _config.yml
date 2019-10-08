@@ -1,7 +1,7 @@
 # Site settings
 title: LuoYu's Blog
 SEOTitle: LuoYu的博客
-header-img: img/home-bg.jpg
+header-img: img/about-bg.jpg
 email: luoyu817@126.com
 description: "don't make it bad."
 keyword: "Java 微服务 Docker"
@@ -15,7 +15,7 @@ future: true
 RSS: true
 #weibo_username:     huxpro
 #zhihu_username:     huxpro
-github_username:    luoyu817
+github_username:    ly817
 #twitter_username:   huxpro
 #facebook_username:  huxpro
 #linkedin_username:  firstname-lastname-idxxxx
