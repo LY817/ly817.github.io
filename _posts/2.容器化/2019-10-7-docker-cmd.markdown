@@ -20,9 +20,7 @@ keywords:
 
 #### 【images】查看本地镜像
 
-```shell
-docker images [OPTIONS] [REPOSITORY[:TAG]]
-```
+`docker images [OPTIONS] [REPOSITORY[:TAG]]`
 
 OPTIONS说明：
 
@@ -35,9 +33,7 @@ OPTIONS说明：
 
 #### 【rmi】删除本地镜像
 
-```shell
-docker rmi [OPTIONS] IMAGE [IMAGE...]
-```
+`docker rmi [OPTIONS] IMAGE [IMAGE...]`
 
 OPTIONS说明：
 
@@ -46,9 +42,7 @@ OPTIONS说明：
 
 #### 【build】使用Dockerfile创建镜像（到本地）
 
-```shell
-docker build [OPTIONS] PATH | URL | .
-```
+`docker build [OPTIONS] PATH | URL | .`
 
 PATH文件路径或URL远程的dockerfile
 
@@ -81,9 +75,7 @@ OPTIONS说明：
 
 #### 【history】查看指定镜像的创建历史
 
-```shell
-docker history [OPTIONS] IMAGE
-```
+`docker history [OPTIONS] IMAGE`
 
 OPTIONS说明：
 
@@ -93,9 +85,7 @@ OPTIONS说明：
 
 #### 【save】将指定镜像保存成 tar 归档文件
 
-```shell
-docker save [OPTIONS] IMAGE [IMAGE...]
-```
+`docker save [OPTIONS] IMAGE [IMAGE...]`
 
 OPTIONS说明：
 
@@ -103,9 +93,7 @@ OPTIONS说明：
 
 #### 【import】从归档文件tar中创建镜像
 
-```sh
-docker import [OPTIONS] file|URL|- [REPOSITORY[:TAG]]
-```
+`docker import [OPTIONS] file|URL|- [REPOSITORY[:TAG]]`
 
 OPTIONS说明：
 
@@ -118,13 +106,9 @@ OPTIONS说明：
 
 #### 【logout】登出
 
-```shell
-docker login [OPTIONS] [SERVER]
-```
+`docker login [OPTIONS] [SERVER]`
 
-```shell
-docker logout [OPTIONS] [SERVER]
-```
+`docker logout [OPTIONS] [SERVER]`
 
 OPTIONS说明：
 
@@ -133,9 +117,7 @@ OPTIONS说明：
 
 #### 【pull】从镜像仓库中拉取或者更新指定镜像
 
-```shell
-docker pull [OPTIONS] NAME[:TAG|@DIGEST]
-```
+`docker pull [OPTIONS] NAME[:TAG|@DIGEST]`
 
 OPTIONS说明：
 
@@ -144,9 +126,7 @@ OPTIONS说明：
 
 #### 【push】将本地的镜像上传到镜像仓库,要先登陆到镜像仓库
 
-```shell
-docker push [OPTIONS] NAME[:TAG]
-```
+`docker push [OPTIONS] NAME[:TAG]`
 
 OPTIONS说明：
 
@@ -154,9 +134,7 @@ OPTIONS说明：
 
 #### 【search】从Docker Hub查找镜像
 
-```shell
-docker search [OPTIONS] TERM
-```
+`docker search [OPTIONS] TERM`
 
 OPTIONS说明：
 
@@ -172,9 +150,7 @@ OPTIONS说明：
 
 run传入的参数可以覆盖构建镜像时设置的参数
 
-```shell
-docker run [OPTIONS] IMAGE [COMMAND] [ARG...]
-```
+`docker run [OPTIONS] IMAGE [COMMAND] [ARG...]`
 
 OPTIONS说明：
 
@@ -214,27 +190,19 @@ OPTIONS说明：
 
 docker start:启动一个或多少已经被停止的容器
 
-```shell
-docker start [OPTIONS] CONTAINER [CONTAINER...]
-```
+`docker start [OPTIONS] CONTAINER [CONTAINER...]`
 
 docker stop :停止一个运行中的容器
 
-```shell
-docker stop [OPTIONS] CONTAINER [CONTAINER...]
-```
+`docker stop [OPTIONS] CONTAINER [CONTAINER...]`
 
 docker restart :重启容器
 
-```shell
-docker restart [OPTIONS] CONTAINER [CONTAINER...]
-```
+`docker restart [OPTIONS] CONTAINER [CONTAINER...]`
 
 #### 【kill】杀死一个正在运行的进程
 
-```shell
-docker kill [OPTIONS] CONTAINER [CONTAINER...]
-```
+`docker kill [OPTIONS] CONTAINER [CONTAINER...]`
 
 OPTIONS说明：
 
@@ -242,9 +210,7 @@ OPTIONS说明：
 
 #### 【rm】删除一个或多少容器
 
-```shell
-docker rm [OPTIONS] CONTAINER [CONTAINER...]
-```
+`docker rm [OPTIONS] CONTAINER [CONTAINER...]`
 
 OPTIONS说明：
 
@@ -254,10 +220,9 @@ OPTIONS说明：
 
 【pause/unpause】暂停和继续
 
-```shell
-docker pause [OPTIONS] CONTAINER [CONTAINER...]
-docker unpause [OPTIONS] CONTAINER [CONTAINER...]
-```
+`docker pause [OPTIONS] CONTAINER [CONTAINER...]`
+
+`docker unpause [OPTIONS] CONTAINER [CONTAINER...]`
 
 ### 容器操作
 
@@ -265,7 +230,7 @@ docker unpause [OPTIONS] CONTAINER [CONTAINER...]
 
 ```shell
 docker exec [OPTIONS] CONTAINER COMMAND [ARG...]
-# 例 进入
+# 例 进入指定镜像
 docker exec -it 11a /bin/bash
 # 查看运行中容器的ip地址
 docker exec -it 11a ip a
@@ -279,9 +244,7 @@ OPTIONS说明：
 
 #### 【ps】获取容器/镜像的元数据
 
-```shell
-docker ps [OPTIONS]
-```
+`docker ps [OPTIONS]`
 
 OPTIONS说明：
 
@@ -296,9 +259,7 @@ OPTIONS说明：
 
 #### 【inspect】获取容器/镜像的元数据
 
-```shell
-docker inspect [OPTIONS] NAME|ID [NAME|ID...]
-```
+`docker inspect [OPTIONS] NAME|ID [NAME|ID...]`
 
 OPTIONS说明：
 
@@ -308,15 +269,11 @@ OPTIONS说明：
 
 #### 【top】查看容器中运行的进程信息，支持 ps 命令参数（在容器外部查看容器内部运行）
 
-```shell
-docker top [OPTIONS] CONTAINER [ps OPTIONS]
-```
+`docker top [OPTIONS] CONTAINER [ps OPTIONS]`
 
 #### 【attach】连接到正在运行中的容器-进入一个容器的标准输出（STDIN）
 
-```shell
-docker attach [OPTIONS] CONTAINER
-```
+`docker attach [OPTIONS] CONTAINER`
 
 OPTIONS说明：
 
@@ -324,9 +281,7 @@ OPTIONS说明：
 
 #### 【logs】获取容器的日志
 
-```shell
-docker logs [OPTIONS] CONTAINER
-```
+`docker logs [OPTIONS] CONTAINER`
 
 OPTIONS说明：
 
@@ -348,15 +303,10 @@ OPTIONS说明：
 
 - -L :保持源目标中的链接
 
+## 【$()】批量处理语法
 
-
-
-## 【$()】批量处理语法 
-
-```dockerfile
-# 批量删除的容器
-docker rm $(docker ps -aq)
-```
+批量删除的容器
+`docker rm $(docker ps -aq)`
 
 ## 【network】网络操作
 
