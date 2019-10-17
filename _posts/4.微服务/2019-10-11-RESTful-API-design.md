@@ -142,6 +142,12 @@ POST /api/Person/4 HTTP/1.1
 X-HTTP-Method-Override: PUT 
 ```
 
+# 实践
+
+#### 使用SpringMVC构建微服务时，controller方法上不必要映射地址
+
+
+
 # 参考
 
 [阮一峰的网络日志-RESTful API 最佳实践](http://www.ruanyifeng.com/blog/2018/10/restful-api-best-practices.html)
