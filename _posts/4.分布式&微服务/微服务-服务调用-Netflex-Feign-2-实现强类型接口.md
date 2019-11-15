@@ -1,0 +1,4 @@
+- 使用coder与decoder进行序列化
+- DTO的组织方式
+  - code-msg-data 泛型
+  - 子类继承

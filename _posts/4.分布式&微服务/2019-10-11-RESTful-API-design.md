@@ -43,22 +43,22 @@ REST是一种API的设计风格，基于HTTP。是一组客户端和服务端的
 
 数据接收即可使用，无需拆包
 
-> 错误示范
+> 封装消息+“捎带”
 >
 > ```http
 > HTTP/1.1 200 OK
 > Content-Type: application/json
 > 
 > {
->     "code":200,
->     "data":{
->     "id":1,
->     "name":"rest"
->     }
+>         "code":200,
+>         "data":{
+>             "id":1,
+>             "name":"rest"
+>         }
 > }
 > ```
 >
-> 正确的做法
+> REST语义
 >
 > ```http
 > HTTP/1.1 200 OK
@@ -66,42 +66,46 @@ REST是一种API的设计风格，基于HTTP。是一组客户端和服务端的
 > code: 200
 > 
 > {
->     "id":1,
->     "name":"rest"
+>         "id":1,
+>         "name":"rest"
 > }
 > ```
 
 发生错误时，不要返回 200 状态码
 
-> 错误示范
+> 封装消息+“捎带”
 >
 > ```http
 > HTTP/1.1 200 OK
 > Content-Type: application/json
 > 
 > {
->   "status": "failure",
->   "data": {
->     "error": "Expected at least two items in list."
->   }
+>       "status": "failure",
+>       "data": {
+>         "error": "Expected at least two items in list."
+>       }
 > }
 > ```
 >
-> 正确的做法
+> REST语义
 >
 > ```http
 > HTTP/1.1 400 Bad Request
 > Content-Type: application/json
 > 
 > {
->   "error": "Invalid payload.",
->   "detail": {
->      "surname": "This field is required."
->   }
+>       "error": "Invalid payload.",
+>       "detail": {
+>          "surname": "This field is required."
+>       }
 > }
 > ```
 
+以上两种接口方式没有对错
 
+封装消息+捎带的方式可以更好的支持强类型的客户端（Feign）以及规范异常处理（自定义更丰富的异常状态码和异常状态描述）
+
+REST风格的HTTP状态码语义可以作为上一层的语义描述：2xx不触发强类型客户端的异常处理
 
 #### 状态码
 
@@ -119,6 +123,8 @@ REST是一种API的设计风格，基于HTTP。是一组客户端和服务端的
 -->
 
 ![博客展示](/img/in-post/micro-service/assets/20180721093338663.png)
+
+![笔记展示](./assets/20180721093338663.png)
 
 
 #### 响应体
