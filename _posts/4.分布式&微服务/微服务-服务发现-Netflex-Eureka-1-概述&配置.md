@@ -41,13 +41,14 @@ Eureka 是一个基于 REST（Representational State Transfer） 的服务，用
 
 ### Eureka Client 客户端
 
-封装与Eureka Server的交互
+封装与Eureka Server的交互，分为服务提供者和服务消费者两种角色
 
 - 维护Eureka Server本服务的状态
   - 微服务启动时，注册到Eureka Server服务注册表
-  - 微服务运行时，通过心跳告知Eureka Server自身的健康状况
+  - 微服务运行时，通过renew心跳告知Eureka Server自身的健康状况
     - 心跳间隔：`eureka.instance.lease-renewal-interval-in-seconds=30`
     - 失效时间：`eureka.instance.lease-expiration-duration-in-seconds=90`
+  - 微服务进程正常关闭时，发送cancel请求注销服务
 
 - 维护本地的服务注册表
   - 微服务启动时，从Eureka Server拉取注册表缓存在本地
@@ -74,16 +75,6 @@ Eureka 是一个基于 REST（Representational State Transfer） 的服务，用
 >
 > > eureka中采用**版本号**（lastDirtyTimestamp）和心跳机制（renewLease重新租约方式）的方式来解决数据复制过程中的冲突问题
 
-## Zone和region
-
-
-
-## 自我保护机制
-
-Eureka 自我保护机制是为了防止误杀服务而提供的一个机制。当个别客户端出现心跳失联时，则认为是客户端的问题，剔除掉客户端；
-
-当 Eureka 捕获到大量的心跳失败时，则认为可能是**自身网络问题**，进入自我保护机制；当客户端心跳恢复时，Eureka 会自动退出自我保护机制。
-
 ## 与ZooKeeper对比对比
 
 #### Eureka Server - AP
@@ -97,3 +88,63 @@ Eureka选择了A也就必须放弃C，也就是说在eureka中采用最终一致
 #### ZooKeeper - CP
 
 ZooKeeper保证数据**强一致性**，当zk集群出现数据不一致（网络分区）时，会停止对外提供服务，直到集群中的节点数据达到统一
+
+## 分区
+
+为了适应部署在云环境（如阿里云或者aws的云主机）下跨境部署，而提出了Zone和region的概念，为服务添加所在节点的位置信息。微服务调用获取serviceURL时，找到网络状况最好的服务地址进行调用
+
+> 服务消费者（Region 北京）会从服务注册信息中选择同机房的服务提供者（Region 北京），发起远程调用。只有同机房的服务提供者挂了才会选择其他机房的服务提供者（Region 青岛）
+
+#### Region
+
+使用region来代表一个独立的地理区域，比如us-east-1、us-east-2,、us-west-1等。在每一个region下面还分为多个AvailabilityZone，一个region对应多个AvailabilityZone，不同的region之间相互隔离。默认情况下面资源只是在单个region之间的AvailabilityZone之间进行复制，跨region之间不会进行资源的复制。
+
+#### AvailabilityZone
+
+AvailabilityZone可以看成是region下面的一个一个机房，各个机房相对独立，主要是为了region的高可用考虑的，一个region下面的机房挂了，还有其他的机房可以使用。
+
+一个AvailabilityZone下有多个Eureka server实例，他们之间构成peer节点集群，然后采用peer to peer的复制模式进行数据复制。
+
+#### 获取注册中心服务地址 ServiceUrl
+
+Eureka Client的属性都在EurekaClientConfig类接口中定义处理方法，EurekaClientConfigBean实现类
+
+- 获取当前应用的region，如果没有，默认为“us-east-1c”
+- 使用region去获取配置中对应的availabilityZones，通过","分割
+- 遍历availabilityZones集合，获取对应的ServiceUrl，判断服务是否可达
+- 如果availabilityZones集合为空，或者没有可达的ServiceUrl，则返回defaultZone
+
+#### 分区配置
+
+任何一个微服务，都会有下面的配置
+
+```yml
+eureka:
+  client:
+    service-url:
+      defaultZone: http://${cmd.server}:8761/eureka/
+```
+
+> service-url是一个map类型的配置，defaultZone作为map的一个键值对（不会将default-zone识别）
+
+同一个region下的所有服务 都使用相同的配置，可利用配置中心进行管理
+
+```yml
+eureka: 
+  client:
+    region: beijing
+    availability-zones:
+      beijing: zone-1,zone-2
+    service-url:
+      zone-1: http://zone1.cdn.com:1234/eureka,http://zone1.cdn.com:4321/eureka
+      zone-2: http://zone2.cdn.com:1234/eureka,http://zone2.cdn.com:4321/eureka
+```
+
+
+
+## 自我保护机制
+
+Eureka 自我保护机制是为了防止误杀服务而提供的一个机制。当个别客户端出现心跳失联时，则认为是客户端的问题，剔除掉客户端；
+
+当 Eureka 捕获到大量的心跳失败时，则认为可能是**自身网络问题**，进入自我保护机制；当客户端心跳恢复时，Eureka 会自动退出自我保护机制。
+
