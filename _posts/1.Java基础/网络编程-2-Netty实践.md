@@ -1,6 +1,6 @@
 # 编程范式
 
-### Server
+## Server
 
 1. 创建主线程循环组（接收分发请求与事件）和工作线程循环组（处理请求的事件）
 
@@ -27,12 +27,33 @@
    channel.closeFuture().sync();
    ```
 
-#### pipeline设置
+## pipeline设置
 
 
 
-#### 自定义handler
+## 自定义handler
 
 
 
 # 与Spring整合
+
+## 整合Component
+
+## 启动
+
+# 实践
+
+## WebSocket推送服务
+
+### 相关Handler解析
+
+### 连接的处理
+
+### 实践
+
+将mq消费客户端获取的消息推送给连接的
+
+## MQTT服务端
+
+### 相关Handler解析
+
