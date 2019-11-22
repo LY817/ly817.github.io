@@ -1,4 +1,4 @@
-# 概述
+# 概述与配置
 
 Eureka 是 Netflix 的一个子模块，也是核心模块之一，是SpringCloud的默认服务发现组件。
 
@@ -32,12 +32,14 @@ Eureka 是一个基于 REST（Representational State Transfer） 的服务，用
 
 - **服务注册**
   服务提供者启动时，会通过 Eureka Client 向 Eureka Server 注册信息，Eureka Server 会存储该服务的信息，Eureka Server 内部有二层缓存机制来维护整个注册表
-
-- **提供注册表**
+- **提供获取最新注册表**
   服务消费者在调用服务时，如果 Eureka Client 没有缓存注册表的话，会从 Eureka Server 获取最新的注册表
-
+  - REST API读取的是一级缓存readOnlyCache，默认30s从注册表（其实是二级缓存）更新一次注册信息
+    - readOnlyCache更新间隔：`eureka.server.response-cache-update-interval-ms=30000` 默认**30s**
 - **同步状态**
   Eureka Client 通过注册、心跳机制和 Eureka Server 同步当前客户端的状态。
+  - 心跳检查间隔：失去心跳多久判定为下线 默认3个心跳周期=90s
+    - `eureka.instance.leaseExpirationDurationInSeconds` 
 
 ### Eureka Client 客户端
 
@@ -53,11 +55,12 @@ Eureka 是一个基于 REST（Representational State Transfer） 的服务，用
 - 维护本地的服务注册表
   - 微服务启动时，从Eureka Server拉取注册表缓存在本地
     - 是否拉取：`eureka.client.fetch-registry=true`
-  - 微服务运行时，定时从服务端获取注册表信息更新
+  - 微服务运行时，定时从服务端获取注册表信息更新 默认**30s**
     - 拉取间隔：`eureka.client.registry-fetch-interval-seconds=30`
 - 根据注册表内容，对服务调用进行解析
   - 将服务名解析成可以访问的ip端口
   - 整合ribbon、feign等组件，共同完成远程服务调用
+    - ribbon缓存刷新间隔默认为**30s**：`ribbon. ServerListRefreshInterval`
 
 
 
@@ -77,7 +80,7 @@ Eureka 是一个基于 REST（Representational State Transfer） 的服务，用
 
 ## 与ZooKeeper对比对比
 
-#### Eureka Server - AP
+### Eureka Server - AP
 
 Eureka选择了A也就必须放弃C，也就是说在eureka中采用最终一致性的方式来保证数据的一致性问题，节点中Eureka Server节点之间的状态是采用异步方式同步的，所以不保证节点间的状态一定是一致的，不过基本能保证最终状态是一致的。
 
@@ -85,7 +88,7 @@ Eureka选择了A也就必须放弃C，也就是说在eureka中采用最终一致
 
 > 需要客户端能支持负载均衡算法、失败重试、异常回滚等容错机制，来保证服务整体的数据一致性（需要大量的额外开发工作）
 
-#### ZooKeeper - CP
+### ZooKeeper - CP
 
 ZooKeeper保证数据**强一致性**，当zk集群出现数据不一致（网络分区）时，会停止对外提供服务，直到集群中的节点数据达到统一
 
@@ -95,17 +98,17 @@ ZooKeeper保证数据**强一致性**，当zk集群出现数据不一致（网�
 
 > 服务消费者（Region 北京）会从服务注册信息中选择同机房的服务提供者（Region 北京），发起远程调用。只有同机房的服务提供者挂了才会选择其他机房的服务提供者（Region 青岛）
 
-#### Region
+### Region
 
 使用region来代表一个独立的地理区域，比如us-east-1、us-east-2,、us-west-1等。在每一个region下面还分为多个AvailabilityZone，一个region对应多个AvailabilityZone，不同的region之间相互隔离。默认情况下面资源只是在单个region之间的AvailabilityZone之间进行复制，跨region之间不会进行资源的复制。
 
-#### AvailabilityZone
+### AvailabilityZone
 
 AvailabilityZone可以看成是region下面的一个一个机房，各个机房相对独立，主要是为了region的高可用考虑的，一个region下面的机房挂了，还有其他的机房可以使用。
 
 一个AvailabilityZone下有多个Eureka server实例，他们之间构成peer节点集群，然后采用peer to peer的复制模式进行数据复制。
 
-#### 获取注册中心服务地址 ServiceUrl
+### 获取注册中心服务地址 ServiceUrl
 
 Eureka Client的属性都在EurekaClientConfig类接口中定义处理方法，EurekaClientConfigBean实现类
 
@@ -114,7 +117,7 @@ Eureka Client的属性都在EurekaClientConfig类接口中定义处理方法，E
 - 遍历availabilityZones集合，获取对应的ServiceUrl，判断服务是否可达
 - 如果availabilityZones集合为空，或者没有可达的ServiceUrl，则返回defaultZone
 
-#### 分区配置
+### 分区配置
 
 任何一个微服务，都会有下面的配置
 
