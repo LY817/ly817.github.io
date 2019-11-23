@@ -1,3 +1,16 @@
+---
+layout: post
+title: Netflex Eureka概述与常用配置
+tags:
+- 分布式
+- 锁
+- 总结
+date: 2019-10-31 20:33:14
+permalink:
+categories:
+description:
+keywords:
+---
 # 概述与配置
 
 Eureka 是 Netflix 的一个子模块，也是核心模块之一，是SpringCloud的默认服务发现组件。
