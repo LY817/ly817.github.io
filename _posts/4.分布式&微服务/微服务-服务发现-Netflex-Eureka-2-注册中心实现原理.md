@@ -4,7 +4,7 @@
 
 Eureka 的数据存储分了两层：数据存储层和缓存层
 
-### 数据存储层 registry服务注册表
+### 数据存储层 - 服务注册表 - registry
 
 对注册服务的维护在`com.netflix.eureka.registry.AbstractInstanceRegistry`中实现
 
@@ -34,7 +34,7 @@ registry由两层ConcurrentHashMap组成
 >
 > `com.netflix.eureka.registry.AbstractInstanceRegistry`中调用initializedResponseCache()实现
 
-#### 第一级缓存 readOnlyCacheMap
+#### 第一级缓存 - readOnlyCacheMap - 外部读取
 
 > 为了供客户端获取注册信息时使用，供对外暴露的getRegistry接口读取
 
@@ -46,7 +46,7 @@ ResponseCacheImpl中的`ConcurrentHashMap<Key,Value> readOnlyCacheMap`属性
 
 TimerTask定时从二级缓存拉取注册信息
 
-#### 第二级缓存 readWriteCacheMap
+#### 第二级缓存 - readWriteCacheMap - 中间缓存
 
 > 为了**降低注册表registry读写锁竞争**，降低读取频率
 
@@ -73,22 +73,35 @@ TimerTask定时从二级缓存拉取注册信息
 
 ![1574346515486](assets/1574346515486.png)
 
-### 维护服务列表
-
- LeaseManager接口主要是维护可用服务清单的，它将服务的可能期限抽象为租约期限，该接口负责为一个实例的租约的创建、续约、和下线 
-
-## 服务暴露
-
-### 服务注册
 
 
+![img](assets/1158841-20190704115343832-1380910507.png)
 
-### 获取服务实例
+> 维护服务列表
+>
+> LeaseManager接口主要是维护可用服务清单的，它将服务的可能期限抽象为租约期限，该接口负责为一个实例的租约的创建、续约、和下线 
+
+### 对外服务暴露
+
+Eureka注册中心是Servlet应用
+
+使用Jersey框架（@POST/@Consumers）对外提供RESTful HTTP接口
+
+- 注册自身服务
+- 拉取服务列表
+- 心跳
+- peer之间数据同步
+
+#### 服务注册
+
+
+
+#### 获取服务实例
 
  LookupService 
 
 > Lookup service for finding active instances.
 
-## P2P集群同步
+### P2P集群同步
 
 InstanceRegistry类继承了 **PeerAwareInstanceRegistryImp**l类，所以服务注册、续约、下线等操作完成后，会去调用PeerAwareInstanceRegistryImpl的相关逻辑。而PeerAwareInstanceRegistryImpl中主要是添加了一个广播的功能，拥有了将服务实例的注册、续约、下线等操作同步到其它Eureka Server的能力。

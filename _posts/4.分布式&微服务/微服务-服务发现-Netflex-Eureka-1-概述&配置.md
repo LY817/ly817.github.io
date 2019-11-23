@@ -28,10 +28,11 @@ Eureka 是一个基于 REST（Representational State Transfer） 的服务，用
 
 ### Eureka Server 注册中心
 
-##### 对外提供功能
+维护集群的服务信息。对Eureka客户端提供注册、同步和拉取服务；Eureka Server之间数据同步
 
 - **服务注册**
   服务提供者启动时，会通过 Eureka Client 向 Eureka Server 注册信息，Eureka Server 会存储该服务的信息，Eureka Server 内部有二层缓存机制来维护整个注册表
+  - 
 - **提供获取最新注册表**
   服务消费者在调用服务时，如果 Eureka Client 没有缓存注册表的话，会从 Eureka Server 获取最新的注册表
   - REST API读取的是一级缓存readOnlyCache，默认30s从注册表（其实是二级缓存）更新一次注册信息
@@ -77,6 +78,25 @@ Eureka 是一个基于 REST（Representational State Transfer） 的服务，用
 > 副本之间不分主从，任何的副本都可以接受写数据，然后副本之间进行数据更新。在对等复制中，由于每一个副本都可以进行写操作，**各个副本之间的数据同步及冲突处理**是一个比较难解决的问题。
 >
 > > eureka中采用**版本号**（lastDirtyTimestamp）和心跳机制（renewLease重新租约方式）的方式来解决数据复制过程中的冲突问题
+
+#### 集群同步配置
+
+Eureka Server开启Client功能
+
+- 指向其他peer作为注册中心 
+- 将自己作为一个客户端向其他Server节点注册和拉取注册表信息
+
+```yml
+eureka:
+  client:
+    # 指定注册中心
+    serviceUrl:
+      defaultZone: http://anohterpeer1:8761/eureka,http://anohterpeer2:8761/eureka
+    # 是否作为一个Eureka Client 注册到Eureka Server上去
+    register-with-eureka: true 
+    # 是否需要从Eureka Server上拉取注册信息到本地。
+    fetch-registry: true
+```
 
 ## 与ZooKeeper对比对比
 
