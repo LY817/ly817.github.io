@@ -15,7 +15,7 @@ SpringBoot应用的pom文件，通过继承`spring-boot-starter-parent`，获取
 </parent>
 ```
 
-如果项目已经有了父pom，需要引入SpringBoot特性，但无法继承`spring-boot-starter-parent`（如），可以通过引入`spring-boot-dependencies`依赖来获取SpringBoot特性
+如果项目已经有了父pom，需要引入SpringBoot特性，但无法继承`spring-boot-starter-parent`（比如在SpringBoot基础上构建的SpringCloud项目的依赖就是通过添加`spring-cloud-dependencies`依赖实现的），可以通过引入`spring-boot-dependencies`依赖来获取SpringBoot特性
 
 > 可以看到 `spring-boot-starter-parent`继承自`spring-boot-dependencies`
 
@@ -98,7 +98,9 @@ fat jar解压后的文件目录
 
 - org.springframework.boot.loader包
 
-  SpringBoot jar包启动的实现，使用java -jar命令实际上是执行`org.springframework.boot.loader.JarLauncher`中的main方法
+  SpringBoot jar包启动的实现
+  
+  使用java -jar命令实际上是执行`org.springframework.boot.loader.JarLauncher`中的main方法
 
 ## war
 
@@ -106,14 +108,43 @@ SpringBoot同样也支持生成war包，部署到web容器中
 
 web.xml
 
+### 目录结构
+
+- WEB-INF
+
+  与正常的war包一样
+
+  - lib
+  - lib-privided
+  - classes
+  - web.xml
+
+- META-INF
+
+  应用相关的元信息，如MANIFEST.MF文件和maven配置
+
+  与fat jar不同的是MANIFEST.MF中Main-Class的值改为了 org.springframework.boot.loader.**JarLauncher**
+
+- org.springframework.boot.loader包
+
+  SpringBoot应用加载器
+
 # 运行方式
 
-## main方法启动
+## 开发阶段
+
+### main方法启动
 
 
 
-## maven插件启动
+### maven插件启动
 
+## 部署阶段
 
+### jar包启动
 
-## war包容器启动
+使用SpringBoot打包插件生成的fat jar包后，通过命令`java -jar spring-app-0.0.1.SNAPSHOT.jar` 启动SpringBoot项目
+
+根据上述的fat jar的目录结构
+
+### war包容器启动
