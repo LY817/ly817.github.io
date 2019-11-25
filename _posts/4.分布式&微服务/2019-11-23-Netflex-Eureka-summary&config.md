@@ -21,6 +21,7 @@ Eureka 是一个基于 REST（Representational State Transfer） 的服务，用
 一方面给内部服务做服务发现（Eureka Server），另一方面可以结合ribbon组件提供各种个性化的负载均衡算法（Eureka Client）
 
 > Eureka属于客户端发现模式，客户端从一个服务注册服务中查询所有可用服务实例的库，并缓存到本地。客户端负责决定相应服务实例的网络位置，并且对请求实现负载均衡。
+> 与客户端模式相对的，还有基于服务端的负载均衡，比如代理服务器nginx、F5以及SpringCloud的网关zuul
 
 ## 基本架构
 

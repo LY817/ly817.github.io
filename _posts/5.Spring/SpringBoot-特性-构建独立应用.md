@@ -19,9 +19,9 @@ SpringBoot应用的pom文件，通过继承`spring-boot-starter-parent`，获取
 
 > 可以看到 `spring-boot-starter-parent`继承自`spring-boot-dependencies`
 
-通过上述的maven依赖配置，可以获取与当前SpringBoot版本**对应**的配置信息
+通过上述的maven依赖配置，可以获取与当前SpringBoot版本**对应**的配置信息（约定版本号）
 
-- starter和第三方库的依赖（约定版本号）
+- starter和第三方库的依赖
 - 引入相关maven插件依赖
 
 > 将SpringBoot版本对应的所有依赖的版本信息都规约`spring-boot-dependencies`中。
@@ -51,11 +51,9 @@ SpringBoot应用需要在pom引入spring-boot-maven-plugin开启SpringBoot相关
 
 # 打包
 
-通过`mvn instsall`
+pom文件中引入spring-boot-maven-plugin依赖后，通过`mvn package`打包
 
 ## jar
-
-pom文件的
 
 ### 目录结构
 
@@ -106,7 +104,33 @@ fat jar解压后的文件目录
 
 SpringBoot同样也支持生成war包，部署到web容器中
 
-web.xml
+### 打包设置
+
+默认情况打包会生成jar包，
+
+1. 在pom文件中配置`<packaging>war</packaging>`
+
+2. 设置打包时排除tomcat依赖，有web容器提供
+
+   ```xml
+   <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-tomcat</artifactId>
+       <scope>provided</scope>
+   </dependency>
+   ```
+
+   默认情况下，tomcat的依赖会被作为内置web容器实现引入，需要排除tomcat依赖放在与web容器冲突
+
+3. SpringBootServletInitializer
+
+   SpringBoot的启动类继承SpringBootServletInitializer
+
+   可以通过重写SpringBootServletInitializer的方法来对web的相关对象进行自定义操作（如servlet、listener，替代传统的web.xml配置）
+
+> 关于web.xml
+>
+> SpringBoot遵循[Servlet 3.0规范 JSR 315](https://jcp.org/en/jsr/detail?id=315)，通过Servlet 3.0提供的接口`javax.servlet.ServletContainerInitializer`，结合SPI机制，在`spring-web`包下发现`META-INF/services/javax.servlet.ServletContainerInitializer`实现类：`org.springframework.web.SpringServletContainerInitializer`从而进行初始化，包括对`DispatcherServlet`的注册，`ContextLoaderListener`的注册等等，最终免去`web.xml`
 
 ### 目录结构
 
@@ -129,15 +153,23 @@ web.xml
 
   SpringBoot应用加载器
 
+# 启动原理
+
+spring-boot-loader
+
 # 运行方式
 
 ## 开发阶段
 
 ### main方法启动
 
-
+开发中最常用的方式，运行SpringBoot入口类的main方法
 
 ### maven插件启动
+
+引入spring-boot-maven-plugin插件，在pom文件同级目录下，通过`mvn spring-boot:run`启动SpringBoot应用
+
+传入命令行参数：`mvn spring-boot:run -Drun.arguments="--server.port=8888"`
 
 ## 部署阶段
 
@@ -145,6 +177,8 @@ web.xml
 
 使用SpringBoot打包插件生成的fat jar包后，通过命令`java -jar spring-app-0.0.1.SNAPSHOT.jar` 启动SpringBoot项目
 
-根据上述的fat jar的目录结构
+传入命令行参数：`java -jar spring-app.jar --server.port=8081`
 
 ### war包容器启动
+
+按上述步骤生成war包，通过web容器启动
