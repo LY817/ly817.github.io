@@ -1,6 +1,6 @@
 ![img](assets/8458706-df1cd20c56e7ca51.png)
 
-## 存储结构
+## 缓存设计
 
 Eureka 的数据存储分了两层：数据存储层和缓存层
 
@@ -69,6 +69,10 @@ TimerTask定时从二级缓存拉取注册信息
 
 ![image-20191121125107737](../4.%E5%88%86%E5%B8%83%E5%BC%8F&%E5%BE%AE%E6%9C%8D%E5%8A%A1/assets/image-20191121125107737.png)
 
+## 数据结构
+
+
+
 ## 数据交互
 
 ![1574346515486](assets/1574346515486.png)
@@ -81,27 +85,39 @@ TimerTask定时从二级缓存拉取注册信息
 >
 > LeaseManager接口主要是维护可用服务清单的，它将服务的可能期限抽象为租约期限，该接口负责为一个实例的租约的创建、续约、和下线 
 
-### 对外服务暴露
+### Eureka Server
+
+#### 对外暴露服务http接口
 
 Eureka注册中心是Servlet应用
 
 使用Jersey框架（@POST/@Consumers）对外提供RESTful HTTP接口
 
-- 注册自身服务
-- 拉取服务列表
-- 心跳
-- peer之间数据同步
+- 接收Eureka客户端请求，维护服务注册表数据（增删改）
+- 提供获取最新服务注册表的接口（查询）
+- 提供前端可视化界面服务（展示）
 
-#### 服务注册
+#### 维护服务注册表
 
+根据Eureka Client请求维护注册表
 
+> **leaseManager接口**定义了应用实例在服务中的以下核心操作
+>  **服务注册register** ，**服务下线cancel**，**服务租约renew**和心跳操作一起保持租约，**服务剔除evict** 
 
-#### 获取服务实例
+#### Peer之间注册表数据同步
 
- LookupService 
+集群部署的注册中心，节点角色对等，互相作为对方的客户端。当其中一个节点进行了注册表变更后，会通知其他的server节点
 
-> Lookup service for finding active instances.
+> InstanceRegistry类继承了 **PeerAwareInstanceRegistryImp**l类
+>
+> 在服务注册、续约、下线等操作完成后，会去调用PeerAwareInstanceRegistryImpl的相关逻辑。而PeerAwareInstanceRegistryImpl中主要是添加了一个广播的功能，拥有了将服务实例的注册、续约、下线等操作同步到其它Eureka Server的能力。
 
-### P2P集群同步
+### Eureka Client
 
-InstanceRegistry类继承了 **PeerAwareInstanceRegistryImp**l类，所以服务注册、续约、下线等操作完成后，会去调用PeerAwareInstanceRegistryImpl的相关逻辑。而PeerAwareInstanceRegistryImpl中主要是添加了一个广播的功能，拥有了将服务实例的注册、续约、下线等操作同步到其它Eureka Server的能力。
+#### 维护服务注册表
+
+封装与Eureka Server交互，更新本地的服务注册表以及更新注册中心自己的状态
+
+#### 服务名解析
+
+为Fegin和Ribbon提供服务名解析接口，通过微服务名称获取实例的实际访问地址集合
