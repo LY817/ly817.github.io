@@ -155,7 +155,19 @@ SpringBoot同样也支持生成war包，部署到web容器中
 
 # 启动原理
 
-spring-boot-loader
+从上述jar文件目录结构可以推测，在使用maven插件生成SpringBoot项目的jar包时，执行完正常的编译打包后，会进行repackage操作，生成我们最后看到的fat jar文件
+
+SpringBoot件被放到BOOT-INF/classes目录下；项目的依赖库被放到BOOT-INF/lib目录（普通的jar不会包含所依赖的jar文件）。
+
+fat jar文件的根目录，存放的是spring-boot-loader（`org.springframework.boot.loader`）包，使用java -jar启动SpringBoot fat jar时，实际上是读取META_INF/MANIFEST.MF文件中的Main-class属性，执行`org.springframework.boot.loader.JarLauncher`
+
+## spring-boot-loader
+
+SpringBoot生成的fat jar和war包实际上是通过spring-boot-loader启动
+
+### Launcher
+
+
 
 # 运行方式
 

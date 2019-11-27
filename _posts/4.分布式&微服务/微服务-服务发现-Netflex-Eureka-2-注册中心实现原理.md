@@ -10,7 +10,7 @@ Eureka 的数据存储分了两层：数据存储层和缓存层
 
 ```java
 private final ConcurrentHashMap<String, Map<String, Lease<InstanceInfo>>> registry
-            = new ConcurrentHashMap<String, Map<String, Lease<InstanceInfo>>>();
+            = new ConcurrentHasdhMap<String, Map<String, Lease<InstanceInfo>>>();
 ```
 
 registry由两层ConcurrentHashMap组成
@@ -71,7 +71,21 @@ TimerTask定时从二级缓存拉取注册信息
 
 ## 数据结构
 
+### 服务注册表
 
+`ConcurrentHashMap<String, Map<String, Lease<InstanceInfo>>>`
+
+#### Lease
+
+#### InstanceInfo
+
+### 缓存
+
+`ConcurrentHashMap<Key,Value>`
+
+`Loading<Key,Value>`
+
+#### Value
 
 ## 数据交互
 
@@ -120,4 +134,4 @@ Eureka注册中心是Servlet应用
 
 #### 服务名解析
 
-为Fegin和Ribbon提供服务名解析接口，通过微服务名称获取实例的实际访问地址集合
+为Fegin和Ribbon提供服务名解析接口，通过微服务名称获取实例的实际访问地址集合，供Ribbon负载均衡获取实际访问地址
