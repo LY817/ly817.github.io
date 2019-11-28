@@ -191,15 +191,24 @@ SpringBoot启动的基本实现类
 
 ### Archive 资源文档
 
+在spring boot里，抽象出了Archive的概念
 
+一个archive可以是一个jar（JarFileArchive），也可以是一个文件目录（ExplodedArchive）。可以理解为Spring boot抽象出来的统一访问资源的层
+
+```java
+public abstract class Archive {
+    // 每一个Archive对应一个URL 表示文件位置
+	public abstract URL getUrl();
+	public String getMainClass();
+	public abstract Collection<Entry> getEntries();
+    // 获取嵌套的子文档
+	public abstract List<Archive> getNestedArchives(EntryFilter filter);
+}
+```
 
 ### MainMethodRunner
 
 利用Java反射调用SpringBootApplication启动类的main方法，启动SpringBoot应用
-
-> 启动参数从
-
-
 
 # 运行方式
 
