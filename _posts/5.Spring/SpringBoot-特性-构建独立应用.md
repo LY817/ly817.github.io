@@ -167,6 +167,38 @@ SpringBoot生成的fat jar和war包实际上是通过spring-boot-loader启动
 
 ### Launcher
 
+SpringBoot启动的基本实现类
+
+#### 基本流程
+
+- 读取MANIFEST.MF文件中的Start-Class，获取SpringBootApplication启动类路径
+- 为SpringBoot应用加载启动所需的**classpath**运行环境（lib依赖包，配置文件）
+- 通过MainMethodRunner，调用SpringBootApplication启动类
+
+#### 实现子类 
+
+- ExecutableArchiveLauncher 
+
+  读取MANIFEST.MF文件中的Start-Class，获取SpringBoot启动类
+
+  - JarLauncher
+
+    加载fat jar中的相关资源
+
+  - WarLauncher
+
+    加载war中相关资源
+
+### Archive 资源文档
+
+
+
+### MainMethodRunner
+
+利用Java反射调用SpringBootApplication启动类的main方法，启动SpringBoot应用
+
+> 启动参数从
+
 
 
 # 运行方式

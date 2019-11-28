@@ -132,6 +132,12 @@ OPTIONS说明：
 
 - --disable-content-trust :忽略镜像的校验,默认开启
 
+在push之前需要使用tag创建一个与推送地址符合的镜像命名空间，用来指定推送地址
+
+- `docker tag sparrow-eureka-server:latest registry.cn-shanghai.aliyuncs.com/luoyu817/sparrow-eureka-server:single`
+
+- `docker push registry.cn-shanghai.aliyuncs.com/luoyu817/sparrow-eureka-server:single` 
+
 #### 【search】从Docker Hub查找镜像
 
 `docker search [OPTIONS] TERM`
