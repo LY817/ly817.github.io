@@ -1,3 +1,14 @@
+---
+title: SpringBoot特性 构建独立应用
+tags:
+- SpringBoot
+date: 2019-11-29 12:47:00
+permalink:
+categories:
+description:
+keywords:
+---
+
 # Maven配置
 
 Spring Boot应用的maven配置
