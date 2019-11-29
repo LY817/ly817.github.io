@@ -1,14 +1,14 @@
 ---
+layout: post
 title: MySQL事务
 tags:
 - MySQL
 - 事务
-date: 2019-11-24 13:10:22
+date: 2019-10-31 20:33:14
 permalink:
 categories:
 description:
 keywords:
-- 面试
 ---
 事务是**一组**数据操作的集合，是一组程序的执行单元
 

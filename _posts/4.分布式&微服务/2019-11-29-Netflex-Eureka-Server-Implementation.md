@@ -1,4 +1,19 @@
-![img](assets/8458706-df1cd20c56e7ca51.png)
+---
+layout: post
+title: Eureka Server注册中心实现原理
+tags:
+- 分布式
+- 微服务
+- SpringCloud
+- Eureka
+date: 2019-10-31 20:33:14
+permalink:
+categories:
+description:
+keywords:
+---
+
+![img](\img\in-post\micro-service\assets\8458706-df1cd20c56e7ca51.png)
 
 ## 缓存设计
 
@@ -21,8 +36,6 @@ registry由两层ConcurrentHashMap组成
 - 第二层
   - key：注册的服务实例的InstanceId
   - value：Lease对象 包含了服务详情和服务治理相关的属性  
-
-> Lease对象
 
 ### 二级缓存层 
 
@@ -67,7 +80,7 @@ TimerTask定时从二级缓存拉取注册信息
 
 ### 相关实现类关系
 
-![image-20191121125107737](../4.%E5%88%86%E5%B8%83%E5%BC%8F&%E5%BE%AE%E6%9C%8D%E5%8A%A1/assets/image-20191121125107737.png)
+![image-20191121125107737](\img\in-post\micro-service\assets\image-20191121125107737.png)
 
 ## 数据结构
 
@@ -95,11 +108,11 @@ TimerTask定时从二级缓存拉取注册信息
 
 ## 数据交互
 
-![1574346515486](assets/1574346515486.png)
+![1574346515486](\img\in-post\micro-service\assets\1574346515486.png)
 
 
 
-![img](assets/1158841-20190704115343832-1380910507.png)
+![img](\img\in-post\micro-service\assets\1158841-20190704115343832-1380910507.png)
 
 > 维护服务列表
 >

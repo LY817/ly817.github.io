@@ -3,7 +3,6 @@ layout: post
 title: "dockerfile语法速查"
 tags:
 - docker
-- 总结
 - 文档
 date: 2019-10-8 11:05:58
 author:     "LuoYu"

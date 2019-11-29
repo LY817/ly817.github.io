@@ -3,7 +3,6 @@ layout: post
 title: "docker命令行速查"
 tags:
 - docker
-- 总结
 - 文档
 date: 2019-10-07 21:18:26
 author:     "LuoYu"

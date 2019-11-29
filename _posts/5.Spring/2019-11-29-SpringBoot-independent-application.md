@@ -1,5 +1,6 @@
 ---
-title: SpringBoot特性 构建独立应用
+layout: post
+title: SpringBoot特性之构建独立应用
 tags:
 - SpringBoot
 date: 2019-11-29 12:47:00
@@ -8,6 +9,8 @@ categories:
 description:
 keywords:
 ---
+
+
 
 # Maven配置
 
