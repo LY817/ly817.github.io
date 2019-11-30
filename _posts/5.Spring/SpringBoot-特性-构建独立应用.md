@@ -131,6 +131,8 @@ SpringBoot同样也支持生成war包，部署到web容器中
 > 关于web.xml
 >
 > SpringBoot遵循[Servlet 3.0规范 JSR 315](https://jcp.org/en/jsr/detail?id=315)，通过Servlet 3.0提供的接口`javax.servlet.ServletContainerInitializer`，结合SPI机制，在`spring-web`包下发现`META-INF/services/javax.servlet.ServletContainerInitializer`实现类：`org.springframework.web.SpringServletContainerInitializer`从而进行初始化，包括对`DispatcherServlet`的注册，`ContextLoaderListener`的注册等等，最终免去`web.xml`
+>
+> SpringBoot生成war包时默认会检查WEB-INF/web.xml，如果没有会打包失败
 
 ### 目录结构
 
