@@ -13,40 +13,105 @@ JVM需要核验字节信息是符合Java虚拟机规范的，否则就被认为�
 
 ### 准备 Preparation
 
-创建类或接口中的静态变量，并初始化静态变量的初始值（但没有赋值）
+创建类或接口中的静态变量，并初始化**静态变量**的**默认初始值**，但没有赋值为代码中定义的值
 
-> 这里的“初始化”和下面的显式初始化阶段是有区别的，侧重点在于分配所需要的内存空间，不会去执行更进一步的JVM指令，不会赋值
+> 这里的“初始化”和下面的显式初始化阶段是有区别的，侧重点在于**分配内存空间**，不会去执行更进一步的JVM指令，不会赋值
+
+**static final**修饰的字段在javac**编译时**生成comstantValue属性，在类加载的准备阶段直接把constantValue的值赋给该字段。
 
 ### 解析 Resolution
 
-将常量池中的符号引用（symbolic reference）替换为直接引用
+将**运行时常量池**中的符号引用（symbolic reference）替换为直接引用
+
+- 符号引用：符号名称
+- 直接引用：内存地址
 
 ### 初始化 initialization
 
-真正去执行**类初始化的代码逻辑**，包括静态字段赋值的动作，以及执行类定义中的静态初始化块内的逻辑，编译器在编译阶段就会把这部分逻辑整理好，**父类型的初始化逻辑优先于当前类型的逻辑**。
+真正去执行**类初始化的代码逻辑**
+
+- 静态字段赋值的动作（默认初始值 > 代码中定义的值）
+
+- 执行类定义中的静态初始化块内的逻辑
+
+> 编译器在编译阶段就会把这部分逻辑整理好，**父类型的初始化逻辑优先于当前类型的逻辑**
+
+类在被Java程序“**首次主动使用**”时，才会被初始化
+
+#### 进行初始化的场景
+
+- 创建类实例`new Object()`
+- 操作类的静态变量，访问或赋值
+- 调用类的静态方法
+- 通过反射操作Class对象
+- 该类的子类被初始化
+- 包含mian方法的类 JVM入口类
+
+#### 不会进行初始化的场景
+
+- static final修饰的属性被引用时（编译时就将不可变常量放入了调用方类的静态常量池）
 
 ## ClassLoader
 
-JVM通过ClassLoader读取class字节码文件，检验是否符合格式要求，然后加载到JVM内存(方法区)中
+JVM通过ClassLoader读取class二进制字节码文件，检验是否符合格式要求，然后加载到JVM内存(方法区)中，在内存中创建`java.lang.Class`对象封装了类在方法区的数据结构（JVM规范并没有指定Class对象的存放位置，HotSpot JVM**存放在方法区**中）
 
-JDK中的ClassLoader是一个抽象类，有多个不同实现
+### class文件加载方式
 
-### 启动类加载器（Bootstrap Class-Loader）
+- 从本地文件系统直接加载
 
-加载 jre/lib下面的jar文件，如rt.jar等运行时的核心类库
+- 从网络下载
+- 从zip、jar等规定文件中加载
+- 从数据库中加载
+- 通过动态编译运行时生成class文件 **动态代理**
 
-> 它是个超级公民，即使是在开启了Security Manager的时候，JDK仍赋予了它加载的程序AllPermission。
+### 双亲委派机制
 
-### 扩展类加载器（Extension or Ext Class-Loader）
+为了更好的保证Java平台的安全性，除了Java虚拟机自带的根类加载器（Bootstrap Class-Loader）以外，其余的类加载器都**有且只有一个**父加载器。当Java程序请求某子加载器加载类时，子加载器首先会委托父加载器去加载，如果父加载器能记载，则由父加载器完成加载类的工作，否则才由子加载器来加载。
+
+### ClassLoader实现
+
+JDK中的`java.lang.ClassLoader`是一个抽象类，有多个不同实现
+
+#### 启动类加载器（Bootstrap Class-Loader）
+
+加载 jre/lib下面的jar文件，如rt.jar等运行时的核心类库，如`java.lang.*`。启动类加载器从系统属性`sun.boot.class.path`所指定的目录中加载类库
+
+启动类加载器的实现依赖于底层操作系统，属于JVM实现的一部分
+
+**不继承**`java.lang.ClassLoader`
+
+#### 扩展类加载器（Extension or Ext Class-Loader）
+
+父加载器是BootstrapClassLoader
 
 负责加载我们放到`jre/lib/ext/`目录下面的jar包，这就是所谓的extension机制。该目录也可以通过设置 `java.ext.dirs`来覆盖
 
-### 应用类加载器（Application or App Class-Loader）
+继承`java.lang.ClassLoader`
 
-加载classpath的下的内容
+#### 应用类加载器（System / Application or App Class-Loader）
 
-可以通过`-Djava.sysem.class.loader=com.yourcorp.YourClassLoader`自定义类加载器
-如果我们指定了这个参数，JDK内建的应用类加载器就会成为定制加载器的父亲，这种方式通常用在类似需要改变双亲委派模式的场景。
+父加载器是ExtensionClassLoader，是用户自定义类加载器的默认父加载器
+
+从环境变量classpath或者系统属性java.class.path所指的的目录加载类
+
+继承`java.lang.ClassLoader`
+
+> 可以通过`-Djava.sysem.class.loader=com.yourcorp.YourClassLoader`自定义类加载器
+> 如果我们指定了这个参数，JDK内建的应用类加载器就会成为定制加载器的父亲，这种方式通常用在类似需要改变双亲委派模式的场景。
+
+#### 用户自定义类加载器
+
+父加载器为应用类加载器
+
+用户可以定制类的加载方式如SpringBoot启动jat jar使用的LaunchedURLClassLoader
+
+继承`java.lang.ClassLoader`
+
+## 类加载次序
+
+JVM初始化一个类时，要求他的所有父类都已经被初始化，但不适用于接口（初始化一个类时，不会初始化这个类实现的接口）
+
+一个父接口不会因为子接口或者实现类被初始化而初始化。只有首次使用接口中定义的静态方法时，才会初始化该接口
 
 # 动态代理
 
