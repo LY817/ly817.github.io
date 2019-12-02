@@ -68,6 +68,10 @@ JVM通过ClassLoader读取class二进制字节码文件，检验是否符合格�
 
 为了更好的保证Java平台的安全性，除了Java虚拟机自带的根类加载器（Bootstrap Class-Loader）以外，其余的类加载器都**有且只有一个**父加载器。当Java程序请求某子加载器加载类时，子加载器首先会委托父加载器去加载，如果父加载器能记载，则由父加载器完成加载类的工作，否则才由子加载器来加载。
 
+<img src="assets\image-20191202124213930.png" alt="image-20191202124213930" style="zoom:80%;" /> 
+
+> 父加载器区别于父类继承，是通过加载器中的属性来指定的，实际上是引用关系
+
 ### ClassLoader实现
 
 JDK中的`java.lang.ClassLoader`是一个抽象类，有多个不同实现
