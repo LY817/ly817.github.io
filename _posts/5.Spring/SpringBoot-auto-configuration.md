@@ -1,16 +1,19 @@
 # 注入方式演进
 
-| 版本 | 方式                                               | 说明                                                         |
-| ---- | -------------------------------------------------- | ------------------------------------------------------------ |
-| 1.2  | XML                                                | 使用XML方式装配Spring Bean                                   |
-| 2.0  | XML激活+扫描+组件注解                              | 添加细分角色`@Componment`,`@Service`；<br/>自动注入`@Autowired`；<br/>根据bean名称查找依赖`@Qualifier`；<br/>SpringMVC相关注解； |
-| 3.0  | `@Configuration`                                   | 代替XML配置文件，提供一些模板（继承xxxConfigurationSupport），通过方法@Bean注入 |
-| 3.1  | @EnableXxx和@Import组合使用 增加配置类导入的灵活性 | 标注在@Configuration标注的配置类上作为入口;<br/>使用元注解`@Import`，引入自定义的选择逻辑（实现ImportSelector接口），根据不同的模式（环境）返回不同的配置类 |
-| 4.0  | @XxxAutoConfiguration                              | Spring Boot 1.0发布                                          |
-| 3.1  | @Profile                                           | 根据启动时不同Profile配置，加载profile对应的组件             |
-| 4.0  | @Conditional标注@ConditionalOnxxx                  | 条件装配：通过实现**Condition接口**，匹配context中是否满足对应注解元数据的配置，匹配通过时，@ConditionalOnxxx标注的组件会被注入 |
+| 版本 | 方式                                              | 说明                                                         |
+| ---- | ------------------------------------------------- | ------------------------------------------------------------ |
+| 1.2  | XML                                               | 使用XML方式装配Spring Bean                                   |
+| 2.0  | XML激活+扫描+组件注解                             | 添加细分角色`@Componment`,`@Service`；<br/>自动注入`@Autowired`；<br/>根据bean名称查找依赖`@Qualifier`；<br/>SpringMVC相关注解； |
+| 3.0  | `@Configuration`配置类                            | 代替XML配置文件<br/>@Bean注入 替代`<bean/>`<br/>@DependsOn、@Primary等代替其中的属性 |
+| 3.0  | `@Import`和`@ImportResource`                      | 标注在**配置类**上<br/>`@Import`导入一个或多个类作为Spring Bean<br/>`@ImportResource`引入XML配置文件 |
+| 3.1  | @EnableXxx+@Import组合使用 增加配置类导入的灵活性 | 标注在@Configuration标注的配置类上作为入口;<br/>@EnableXxx中封**装某个功能模块bean的引入** |
+| 3.1  | @ComponentScan                                    | 替代`<context:component-scan>`<br/>指定扫描component包       |
+| 3.1  | @Profile                                          | 修饰模式注解<br/>根据启动时不同Profile配置，加载对应的组件Bean<br/>`spring.profiles.active`属性<br/>ApplicationContext.getEnvironment().setActiveProfiles(“ProfileName”) |
+| 4.0  | @XxxAutoConfiguration                             | Spring Boot 1.0发布                                          |
+| 4.0  | @Conditional标注@ConditionalOnxxx                 | **条件装配**：通过实现**Conditionpring接口**，匹配context中是否满足对应注解元数据的配置，匹配通过时，@ConditionalOnxxx标注的组件会被注入 |
+| 5.0  |                                                   |                                                              |
 
-4.0之前 虽然有注解驱动 但是 没有之前启动context的入口
+
 
 # 自动装配
 
@@ -92,6 +95,8 @@ public String[] selectImports(AnnotationMetadata annotationMetadata) {
     return StringUtils.toStringArray(configurations);
 }
 ```
+
+## 模式注解
 
 
 
