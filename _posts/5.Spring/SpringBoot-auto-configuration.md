@@ -116,18 +116,3 @@ SpringFactoriesLoader属于Spring框架私有的一种扩展方案，其主要�
 
 
 
-## 模式注解
-
-
-
-## 依赖关系
-
-### Order
-
-实现Order接口
-
-### 条件装配 `@Conditional`
-
-`@ConditionalOnClass`:当目标类存在于classpath时予以装配
-
-`@ConditionalOnMissingClass`
