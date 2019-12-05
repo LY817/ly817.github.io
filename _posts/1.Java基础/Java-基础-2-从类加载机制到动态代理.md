@@ -55,6 +55,10 @@ JVM需要核验字节信息是符合Java虚拟机规范的，否则就被认为�
 
 JVM通过ClassLoader读取class二进制字节码文件，检验是否符合格式要求，然后加载到JVM内存(方法区)中，在内存中创建`java.lang.Class`对象封装了类在方法区的数据结构（JVM规范并没有指定Class对象的存放位置，HotSpot JVM**存放在方法区**中）
 
+> 除了数组类的Class对象其他的Class对象都是由ClassLoader创建
+>
+> 数组类的Class对象不是由classLoader创建，JVM运行时动态创建（这种数组的Class类型开头带有L进行区分如`Ljava.lang.String`）
+
 ### class文件加载方式
 
 - 从本地文件系统直接加载
@@ -64,7 +68,7 @@ JVM通过ClassLoader读取class二进制字节码文件，检验是否符合格�
 - 从数据库中加载
 - 通过动态编译运行时生成class文件 **动态代理**
 
-### 双亲委派机制
+### 双亲委派机制 parent delegation
 
 为了更好的保证Java平台的安全性，除了Java虚拟机自带的根类加载器（Bootstrap Class-Loader）以外，其余的类加载器都**有且只有一个**父加载器
 
@@ -72,7 +76,7 @@ JVM通过ClassLoader读取class二进制字节码文件，检验是否符合格�
 
 > 父加载器区别于父类继承，是通过加载器中的属性来指定的，实际上是引用关系
 
-当Java程序请求某子加载器加载类时，子加载器首先会委托父加载器去加载，如果父加载器能加载，则由父加载器完成加载类的工作；否则才由子加载器来加载。
+当Java程序请求某子加载器加载类时，子加载器在自己尝试加载类**之前**会委托父加载器去加载，如果父加载器能加载，则由父加载器完成加载类的工作；否则才由子加载器来加载。
 
 ![image-20191204124820507](assets\image-20191204124820507.png)
 
@@ -123,13 +127,34 @@ JVM初始化一个类时，要求他的所有父类都已经被初始化，但**
 
 ## 自定义ClassLoader
 
+### ClassLoader抽象类
+
+#### 构造方法
+
+`super()` 无参的构造方法指定的父加载器为应用类加载器（getSystemClassLoader）
+
+`super(ClassLoader parent)` 指定父加载器
+
+#### 关键方法
+
+读取类的二进制数据 `bype[] loadClassData(String name)`
+
+#### 实现抽象方法
+
+- `Class<?> findClass(final String qualifiedClassName)`
+  - 调用`super.defineClass`将二进制加载为Class对象
+
+- `Class<?> loadClass(String name, boolean resolve)`
+
+
+
 ### 获取ClassLoader
 
 
 
 #### Class.forName
 
-Class.forName("类的全路径")，来获取加载指定类的类加载器对象引用；
+每一个Class对象保存着加载（defined）它的ClassLoader的引用。通过Class.forName("类的全路径")，来获取加载指定类的类加载器对象引用；
 
 如果加载该类的加载器为Bootstrap Class-Loader，则返回为空，因为Bootstrap Class-Loader是由C++实现，不继承ClassLoader
 
