@@ -1,3 +1,17 @@
+---
+layout: post
+title: SpringBoot特性之自动装配
+tags:
+- SpringBoot
+date: 2019-12-05 12:47:00
+permalink:
+categories:
+description:
+keywords:
+---
+
+
+
 # 注入方式演进
 
 | 版本 | 方式                                                         | 说明                                                         |
@@ -63,13 +77,11 @@ EnableAutoConfiguration中通过`@Import`注解引入AutoConfigurationImportSele
 
 > selectImports方法中调用SpringFactoriesLoader读取`META-INF/spring.factories`配置文件，找到需要加载的XXXAutoConfiguration实现0配置自动加载
 
-#### 加载时机
-
-Springboot应用启动过程中使用ConfigurationClassParser分析@Configuration标注的配置类时，如果发现注解中存在`@Import(ImportSelectorImpl.class)`的情况，就会创建一个相应的ImportSelector对象， 并调用其selectImports(AnnotationMetadata annotationMetadata)
-
 #### selectImports
 
-入参annotationMetadata包含启动类携带的元数据（注解）
+> 调用时机
+>
+> Springboot应用启动过程中，使用ConfigurationClassParser分析@Configuration标注的配置类时，如果发现注解中存在`@Import(ImportSelectorImpl.class)`的情况，就会创建一个相应的ImportSelector对象， 并调用其selectImports(AnnotationMetadata annotationMetadata)
 
 ```java
 @Override
@@ -81,14 +93,14 @@ public String[] selectImports(AnnotationMetadata annotationMetadata) {
     AutoConfigurationMetadata autoConfigurationMetadata = AutoConfigurationMetadataLoader
             .loadMetadata(this.beanClassLoader);
     AnnotationAttributes attributes = getAttributes(annotationMetadata);
-    //获取所有的自动配置类（META-INF/spring.factories中配置的key为org.springframework.boot.autoconfigure.EnableAutoConfiguration的类）
+    // 获取所有的自动配置类（META-INF/spring.factories中配置的key为org.springframework.boot.autoconfigure.EnableAutoConfiguration的类）
     List<String> configurations = getCandidateConfigurations(annotationMetadata,
             attributes);
     configurations = removeDuplicates(configurations);
-    //需要排除的自动装配类（springboot的主类上 @SpringBootApplication(exclude = {com.demo.starter.config.DemoConfig.class})指定的排除的自动装配类）
+    // 需要排除的自动装配类（springboot的主类上 @SpringBootApplication(exclude = {com.demo.starter.config.DemoConfig.class})指定的排除的自动装配类）
     Set<String> exclusions = getExclusions(annotationMetadata, attributes);
     checkExcludedClasses(configurations, exclusions);
-    //将需要排除的类从 configurations remove掉
+    // 将需要排除的类从 configurations remove掉
     configurations.removeAll(exclusions);
     configurations = filter(configurations, autoConfigurationMetadata);
     fireAutoConfigurationImportEvents(configurations, exclusions);
@@ -106,13 +118,17 @@ SpringFactoriesLoader属于Spring框架私有的一种扩展方案，其主要�
 
 # starter
 
-利用上述SpringBoot自动装配机制，将第三方功能作为功能模块引入到SpringBoot应用中，封装了对接细节
+利用上述SpringBoot自动装配机制，将第三方功能作为功能模块引入到SpringBoot应用中，封装了注入细节
 
 - 整合了功能模块需要的依赖库
 - 相关参数的默认配置
 - 第三方bean注入到Spring上下文
 
-只用在添加对应starter依赖，不需要做额外配置，就可以从Spring容器中获取到功能模块的Bean
+SpringBoot中将实现这种功能的项目称为starter。只用在添加对应starter依赖，不需要做额外配置，就可以从Spring容器中获取到功能模块的Bean
+
+
+
+
 
 
 

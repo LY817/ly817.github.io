@@ -121,9 +121,13 @@ JVM初始化一个类时，要求他的所有父类都已经被初始化，但**
 
 一个父接口不会因为子接口或者实现类被初始化而初始化。只有首次使用接口中定义的静态方法时，才会初始化该接口
 
-## 获取ClassLoader
+## 自定义ClassLoader
 
-### Class.forName
+### 获取ClassLoader
+
+
+
+#### Class.forName
 
 Class.forName("类的全路径")，来获取加载指定类的类加载器对象引用；
 
