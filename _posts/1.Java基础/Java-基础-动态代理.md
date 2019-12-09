@@ -1,163 +1,3 @@
-# 类加载机制
-
-## 类加载过程
-
-### 加载 Loading 
-
-Java将字节码数据从不同的数据来源读取到JVM中，并**映射为JVM认可的数据结构（Class对象）**，这里的数据源可能是各种各样的形态，如jar文件、class文件，甚至是网络数据源等；如果输入数据不是ClassFile的结构，则会抛出ClassFormatError
-
-### 验证 Verfication
-
-JVM需要核验字节信息是符合Java虚拟机规范的，否则就被认为是VerifyError；
-防止恶意信息或者不合规的信息危害JVM的运行，验证阶段有可能触发更多class的加载；
-
-### 准备 Preparation
-
-创建类或接口中的静态变量，并初始化**静态变量**的**默认初始值**，但没有赋值为代码中定义的值
-
-> 这里的“初始化”和下面的显式初始化阶段是有区别的，侧重点在于**分配内存空间**，不会去执行更进一步的JVM指令，不会赋值
-
-**static final**修饰的字段在javac**编译时**生成comstantValue属性，在类加载的准备阶段直接把constantValue的值赋给该字段。
-
-### 解析 Resolution
-
-将**运行时常量池**中的符号引用（symbolic reference）替换为直接引用
-
-- 符号引用：符号名称
-- 直接引用：内存地址
-
-### 初始化 initialization
-
-真正去执行**类初始化的代码逻辑**
-
-- 静态字段赋值的动作（默认初始值 > 代码中定义的值）
-
-- 执行类定义中的静态初始化块内的逻辑
-
-> 编译器在编译阶段就会把这部分逻辑整理好，**父类型的初始化逻辑优先于当前类型的逻辑**
-
-类在被Java程序“**首次主动使用**”时，才会被初始化
-
-#### 进行初始化的场景
-
-- 创建类实例`new Object()`
-- 操作类的静态变量，访问或赋值
-- 调用类的静态方法
-- 通过反射操作Class对象
-- 该类的子类被初始化
-- 包含mian方法的类 JVM入口类
-
-#### 不会进行初始化的场景
-
-- static final修饰的属性被引用时（编译时就将不可变常量放入了调用方类的静态常量池）
-
-## ClassLoader
-
-JVM通过ClassLoader读取class二进制字节码文件，检验是否符合格式要求，然后加载到JVM内存(方法区)中，在内存中创建`java.lang.Class`对象封装了类在方法区的数据结构（JVM规范并没有指定Class对象的存放位置，HotSpot JVM**存放在方法区**中）
-
-> 除了数组类的Class对象其他的Class对象都是由ClassLoader创建
->
-> 数组类的Class对象不是由classLoader创建，JVM运行时动态创建（这种数组的Class类型开头带有L进行区分如`Ljava.lang.String`）
-
-### class文件加载方式
-
-- 从本地文件系统直接加载
-
-- 从网络下载
-- 从zip、jar等规定文件中加载
-- 从数据库中加载
-- 通过动态编译运行时生成class文件 **动态代理**
-
-### 双亲委派机制 parent delegation
-
-为了更好的保证Java平台的安全性，除了Java虚拟机自带的根类加载器（Bootstrap Class-Loader）以外，其余的类加载器都**有且只有一个**父加载器
-
-<img src="assets\image-20191202124213930.png" alt="image-20191202124213930" style="zoom:80%;" /> 
-
-> 父加载器区别于父类继承，是通过加载器中的属性来指定的，实际上是引用关系
-
-当Java程序请求某子加载器加载类时，子加载器在自己尝试加载类**之前**会委托父加载器去加载，如果父加载器能加载，则由父加载器完成加载类的工作；否则才由子加载器来加载。
-
-![image-20191204124820507](assets\image-20191204124820507.png)
-
-### ClassLoader实现
-
-JDK中的`java.lang.ClassLoader`是一个抽象类，有多个不同实现
-
-#### 启动类加载器（Bootstrap Class-Loader）
-
-加载 jre/lib下面的jar文件，如rt.jar等运行时的核心类库，如`java.lang.*`。启动类加载器从系统属性`sun.boot.class.path`所指定的目录中加载类库
-
-启动类加载器的实现依赖于底层操作系统，由C++实现，属于JVM实现的一部分
-
-**不继承**`java.lang.ClassLoader`
-
-#### 扩展类加载器（Extension or Ext Class-Loader）
-
-父加载器是BootstrapClassLoader
-
-负责加载我们放到`jre/lib/ext/`目录下面的jar包，这就是所谓的extension机制。该目录也可以通过设置 `java.ext.dirs`来覆盖
-
-继承`java.lang.ClassLoader`
-
-#### 应用类加载器（Application or App Class-Loader）
-
-父加载器是ExtensionClassLoader，是用户自定义类加载器的默认父加载器
-
-从环境变量classpath或者系统属性java.class.path所指的的目录加载类
-
-继承`java.lang.ClassLoader`
-
-> 可以通过`-Djava.sysem.class.loader=com.yourcorp.YourClassLoader`自定义类加载器
-> 如果我们指定了这个参数，JDK内建的应用类加载器就会成为定制加载器的父亲，这种方式通常用在类似需要改变双亲委派模式的场景。
-
-#### 用户自定义类加载器
-
-父加载器为应用类加载器
-
-用户可以定制类的加载方式如SpringBoot启动jat jar使用的LaunchedURLClassLoader
-
-继承`java.lang.ClassLoader`
-
-## 类加载次序
-
-JVM初始化一个类时，要求他的所有父类都已经被初始化，但**不适用于接口**（初始化一个类时，不会初始化这个类实现的接口）
-
-一个父接口不会因为子接口或者实现类被初始化而初始化。只有首次使用接口中定义的静态方法时，才会初始化该接口
-
-## 自定义ClassLoader
-
-### ClassLoader抽象类
-
-#### 构造方法
-
-`super()` 无参的构造方法指定的父加载器为应用类加载器（getSystemClassLoader）
-
-`super(ClassLoader parent)` 指定父加载器
-
-#### 关键方法
-
-读取类的二进制数据 `bype[] loadClassData(String name)`
-
-#### 实现抽象方法
-
-- `Class<?> findClass(final String qualifiedClassName)`
-  - 调用`super.defineClass`将二进制加载为Class对象
-
-- `Class<?> loadClass(String name, boolean resolve)`
-
-
-
-### 获取ClassLoader
-
-
-
-#### Class.forName
-
-每一个Class对象保存着加载（defined）它的ClassLoader的引用。通过Class.forName("类的全路径")，来获取加载指定类的类加载器对象引用；
-
-如果加载该类的加载器为Bootstrap Class-Loader，则返回为空，因为Bootstrap Class-Loader是由C++实现，不继承ClassLoader
-
 # 动态代理
 
 ## 动态生成class文件
@@ -166,7 +6,7 @@ Java编译器编译好Java文件之后，产生.class 文件在磁盘中。这�
 
 > class文件可以在运行期之前通过类加载器；也可以在运行时，在程序中按照Java虚拟机规范对class文件的组织规则生成对应的二进制字节码（开源实现如：ASM，Javassist），然后个给类加载器加载，得到对应的class对象
 
-![1542768554570](../../../mdblog/root/it/java/%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/assets/1542768554570.png)
+![1542768554570](E:/mdblog/root/it/java/动态代理/assets/1542768554570.png)
 
 
 
@@ -216,7 +56,7 @@ public class MyGenerator {
 
 静态代理中的proxy类的class文件真实存在classpath下，就是所谓的静态
 
-![1542775692746](../../../mdblog/root/it/java/%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/assets/1542775692746.png)
+![1542775692746](E:/mdblog/root/it/java/动态代理/assets/1542775692746.png)
 
 > 当在代码阶段规定这种代理关系，Proxy类通过编译器编译成class文件，当系统运行时，此class已经存在了。这种静态的代理模式固然在访问无法访问的资源，增强现有的接口业务功能方面有很大的优点，但是大量使用这种静态代理，会使我们系统内的**类的规模增大**，并且**不易维护**；并且由于Proxy和RealSubject的功能 本质上是相同的，Proxy只是起到了中介的作用，这种代理在系统中的存在，导致系统结构比较臃肿和松散。
 
@@ -244,7 +84,7 @@ Proxy需要触发真实角色动作时，只用告诉InvocationHandler：需要�
 
 Proxy类和实现类都实现同一个接口
 
-![1542790658539](../../../mdblog/root/it/java/%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86/assets/1542790658539.png)
+![1542790658539](E:/mdblog/root/it/java/动态代理/assets/1542790658539.png)
 
 有两种实现生成动态代理的思路
 
