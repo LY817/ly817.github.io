@@ -6,7 +6,7 @@
 
 Java将字节码数据从不同的数据来源读取到JVM中，并**映射为JVM认可的数据结构（Class对象）**，这里的数据源可能是各种各样的形态，如jar文件、class文件，甚至是网络数据源等；如果输入数据不是ClassFile的结构，则会抛出ClassFormatError
 
-### 验证 Verfication
+### 验证 V erfication
 
 JVM需要核验字节信息是符合Java虚拟机规范的，否则就被认为是VerifyError；
 防止恶意信息或者不合规的信息危害JVM的运行，验证阶段有可能触发更多class的加载；
@@ -182,3 +182,16 @@ JVM初始化一个类时，要求他的所有父类都已经被初始化，但**
 每一个Class对象保存着加载（defined）它的ClassLoader的引用。通过Class.forName("类的全路径")，来获取加载指定类的类加载器对象引用；
 
 > 如果加载该类的加载器为Bootstrap Class-Loader，则返回为空，因为Bootstrap Class-Loader是由C++实现，不继承ClassLoader
+
+# 类卸载
+
+当类的Class对象不再被引用，即不可达时，Class对象就会结束生命周期，Class对象在方法区内的数据也会被卸载。
+
+- 由JVM自带的类加载器所加载的类，在虚拟机的生命周期中，始终不会被卸载；JVM始终会引用自带的类加载器，而这些类加载器则会始终引用所加载类的Class对象，所以这些由JVM自带的类加载器所加载的类始终是**可达**的
+- 由用户自定义加载器所加载的类可以被卸载
+
+> Class对象与类加载器**双向关联**
+>
+> 类加载器会保存所加载的所有Class对象的引用；一个Class对象也会引用它的类加载器，使用getClassLoader方法获取它的类加载器
+>
+> 一个类的实例总是引用这个类的Class对象，通过Object的getClass方法获取，
