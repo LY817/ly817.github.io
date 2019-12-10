@@ -1,39 +1,56 @@
-哈希表（hash table）也叫散列表，是一种非常重要的数据结构，应用场景及其丰富，许多缓存技术（比如memcached）的核心其实就是在内存中维护一张大的哈希表，而HashMap的实现原理也常常出现在各类的面试题中，重要性可见一斑。本文会对java集合框架中的对应实现HashMap的实现原理进行讲解，然后会对JDK7的HashMap源码进行分析
 
-[参考1](https://www.cnblogs.com/peizhe123/p/5790252.html)
 
-## Hash表数据结构
+## HashMap数据结构
 
-我们知道，数据结构的物理存储结构只有两种：**顺序存储结构**和**链式存储结构**（像栈，队列，树，图等是从逻辑结构去抽象的，**映射到内存中，也这两种物理组织形式**），而在上面我们提到过，在数组中根据下标查找某个元素，一次定位就可以达到，哈希表利用了这种特性，**哈希表的主干就是数组**。
+> 数据结构的物理存储结构只有两种：**顺序存储结构**和**链式存储结构**（像栈，队列，树，图等是从逻辑结构去抽象的，**映射到内存中，也这两种物理组织形式**）
+>
+> - 顺序存储 Array 
+>   - 优点：便于查找（时间复杂度O(1)）、存储密度大
+>   - 缺点：插入和删除效率低
+> - 链式存储 Linked
+>   - 优点：插入和删除效率高
+>   - 缺点：查询效率低（时间复杂度O(n)）
 
-比如我们要新增或查找某个元素，我们通过**把当前元素的特征 通过某个函数映射到数组中的某个位置**，通过数组下标一次定位就可完成操作
+HashMap是以数组为基础实现的。比如我们要新增或查找某个元素，我们通过**把当前元素的特征（key） 通过某个函数映射到数组中的某个位置**，通过数组下标一次定位就可完成操作
 
-**存储位置（数组index） = f(关键字、元素的特征)**
+**存储位置（数组index） = f(关键字、元素的特征)**   其中，这个函数f一般称为**哈希函数**
 
-其中，这个函数f一般称为**哈希函数**
-
-这个函数的设计好坏会直接影响到哈希表的优劣。举个例子，比如我们要在哈希表中执行插入操作：
-
-![img](assets/1024555-20161113180447499-1953916974.png)
-
-#### 哈希冲突
+### 哈希冲突
 
 当我们对某个元素进行哈希运算，得到一个存储地址，然后要进行插入的时候，发现已经被其他元素占用了，其实这就是所谓的**哈希冲突**，也叫**哈希碰撞**。
 
-前面我们提到过，哈希函数的设计至关重要，好的哈希函数会尽可能地保证 **计算简单**和**散列地址分布均匀,**但是，我们需要清楚的是，数组是一块连续的固定长度的内存空间，再好的哈希函数也不能保证得到的存储地址绝对不发生冲突。那么哈希冲突如何解决呢？哈希冲突的解决方案有多种:开放定址法（发生冲突，继续寻找下一块未被占用的存储地址），再散列函数法，链地址法，而HashMap即是采用了链地址法，也就是**数组+链表**的方式
+哈希函数的设计至关重要，好的哈希函数会尽可能地保证 **计算简单**和**散列地址分布均匀,**但是，数组是一块**连续**的**固定长度**的内存空间，再好的哈希函数也不能保证得到的存储地址绝对不发生冲突。而HashMap即是采用了链地址法，也就是**数组+链表**的方式 来解决哈希碰撞
 
-## HashMap实现原理
+### 数组+链表结构
 
-Java8之前的版本
+HashMap由**数组+链表**组成的：数组是HashMap的主体，**链表则是主要为了解决哈希冲突而存在的**
 
-#### Entry 基本数据结构
+![image-20191210101633883](assets\image-20191210101633883.png)
+
+#### 查找流程
+
+如果定位到的数组位置不含链表（当前entry的next指向null）,那么对于查找，添加等操作很快，仅需一次寻址即可；
+
+如果定位到的数组包含链表，对于添加操作，其时间复杂度为O(n)，首先遍历链表，存在即覆盖，否则新增；对于查找操作来讲，仍需遍历链表，然后通过key对象的equals方法逐一比对查找。所以，性能考虑，HashMap中的链表出现越少，性能才会越好
+
+#### 存储位置的确定流程
+
+![img](assets/1024555-20161115133556388-1098209938.png)
+
+## 基本数据结构
+
+### Entry Java8之前
 
 HashMap的主干是一个Entry数组
 
-Entry是HashMap的基本组成单元，每一个Entry包含一个**key-value键值对**
+Entry是HashMap的基本组成单元，每一个Entry包含：
+
+- 一个**key-value键值对**
+- 下一个entry的指针
+- key的hashcode
 
 ```java
-//HashMap的主干数组，可以看到就是一个Entry数组，初始值为空数组{}，主干数组的长度一定是2的次幂，至于为什么这么做，后面会有详细分析。
+//HashMap的主干数组，可以看到就是一个Entry数组，初始值为空数组{}，主干数组的长度一定是2的次幂
 transient Entry<K,V>[] table = (Entry<K,V>[]) EMPTY_TABLE;
 ```
 
@@ -58,17 +75,56 @@ static class Entry<K,V> implements Map.Entry<K,V> {
 }
 ```
 
-#### 内部参数
+### Node Java8之后
 
-##### 容量阈值 threshold
+当链表过长后，会将链表树化，以提高查询效率
+
+```java
+static class Node<K,V> implements Map.Entry<K,V> {
+    final int hash;
+    final K key;
+    V value;
+    Node<K,V> next;
+
+    Node(int hash, K key, V value, Node<K,V> next) {
+        this.hash = hash;
+        this.key = key;
+        this.value = value;
+        this.next = next;
+    }
+    ···
+}
+```
+
+
+
+
+
+```java
+static final class TreeNode<K,V> extends LinkedHashMap.Entry<K,V> {
+    TreeNode<K,V> parent;  // red-black tree links
+    TreeNode<K,V> left;
+    TreeNode<K,V> right;
+    TreeNode<K,V> prev;    // needed to unlink next upon deletion
+    boolean red;
+    TreeNode(int hash, K key, V val, Node<K,V> next) {
+        super(hash, key, val, next);
+    }
+    ···
+}
+```
+
+## 重要参数
+
+#### 容量阈值 threshold
 
 当初始化一个空的HashMap对象时，threshold**默认初始值为16**
 
-##### 负载因子 DEFAULT_LOAD_FACTOR
+#### 负载因子 DEFAULT_LOAD_FACTOR
 
 用于扩容，默认值为0.75f
 
-#### 构造函数
+### 构造函数
 
 HashMap有4个构造器，其他构造器如果用户没有传入initialCapacity 和loadFactor这两个参数，会使用默认值
 
@@ -95,7 +151,107 @@ public HashMap(int initialCapacity, float loadFactor) {
 }
 ```
 
-#### put方法
+### 初始化数组 inflateTable
+
+inflateTable这个方法用于为主干数组table在内存中分配存储空间
+
+通过roundUpToPowerOf2(toSize)可以确保capacity为大于或等于toSize的最接近toSize的二次幂，比如toSize=13,则capacity=16;to_size=16,capacity=16;to_size=17,capacity=32.
+
+```java
+private void inflateTable(int toSize) {
+    int capacity = roundUpToPowerOf2(toSize);//capacity一定是2的次幂
+    //此处为threshold赋值，取capacity*loadFactor和MAXIMUM_CAPACITY+1的最小值，capaticy一定不会超过MAXIMUM_CAPACITY，除非loadFactor大于1
+    threshold = (int) Math.min(capacity * loadFactor, MAXIMUM_CAPACITY + 1);
+    table = new Entry[capacity];
+    initHashSeedAsNeeded(capacity);
+}
+```
+
+roundUpToPowerOf2中的这段处理使得数组长度一定为2的次幂，Integer.highestOneBit是用来获取最左边的bit（其他bit位为0）所代表的数值
+
+```java
+ private static int roundUpToPowerOf2(int number) {
+     // assert number >= 0 : "number must be non-negative";
+     return number >= MAXIMUM_CAPACITY
+         ? MAXIMUM_CAPACITY
+         : (number > 1) ? Integer.highestOneBit((number - 1) << 1) : 1;
+ }
+```
+
+## 寻址
+
+将hashcode转化成数组table的下标，保证保证最终获取的存储位置**尽量分布均匀**
+
+hash函数计算出的值，通过indexFor进一步处理来获取实际的存储位置
+
+### hash函数
+
+```java
+// 对key的hashcode进一步进行计算以及二进制位的调整等来保证最终获取的存储位置尽量分布均匀
+final int hash(Object k) {
+    int h = hashSeed;
+    if (0 != h && k instanceof String) {
+        return sun.misc.Hashing.stringHash32((String) k);
+    }
+
+    h ^= k.hashCode();
+
+    h ^= (h >>> 20) ^ (h >>> 12);
+    return h ^ (h >>> 7) ^ (h >>> 4);
+}
+```
+
+#### java8之后优化
+
+```java
+static final int hash(Object key) {    
+    int h;    
+    return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
+}
+```
+
+> 原始hashCode int 32位 `1111 1111 1111 1111 1111 1010 0111 1100`
+>
+> 右移16位  h >>> 16        `0000 0000 0000 0000 1111 1111 1111 1111`
+>
+> 两者做 异或运算              `1111 1111 1111 1111 0000 0101 1000 0011`
+>
+> 目的是 让原始的hashCode的**高16位和低16位都参与运算**，让寻址计算带有整个hash值的特征，减少哈希碰撞的发生
+>
+> 因为后续hash值会与数组长度length进行与运算，**数组长度**的值**不可能超过2的16次方**，所以高16位全部是0，取模时hash值的**前16位的特征会被丢失**
+>
+> 比如低16位相同，高16位不同的两个hash值，如果不进行优化，会寻址到相同的下标
+
+### indexFor 寻址
+
+将hash值取模获取index下标
+
+```java
+// 以上hash函数计算出的值，通过indexFor进一步处理来获取实际的存储位置
+static int indexFor(int h, int length) {
+    // 保证获取的index一定在数组范围内 不会越界
+    // 举个例子，默认容量16，length-1=15 ，h=18 二进制与运算后得到 2
+    return h & (length - 1);
+}
+```
+
+> 与运算 有0则0
+>
+> ```
+>         1  0  0  1  0    = 18
+>     &   0  1  1  1  1    = 15
+>     __________________
+>         0  0  0  1  0    = 2
+> ```
+
+
+#### 寻址优化的前提：数组长度 必须是2的幂
+
+hashMap实现中使用位运算`hashCode & (length - 1)`寻址，对比直接取模`hashCode % length`进行了优化，**提高运算性能**
+
+但这两种取模方式**等价的前提**是length必须是2的幂
+
+## put 
 
 第一次调用put方法时，真正初始化数组 开辟内存空间
 
@@ -126,75 +282,7 @@ public V put(K key, V value) {
 }    
 ```
 
-#### 初始化数组 inflateTable
-
-inflateTable这个方法用于为主干数组table在内存中分配存储空间
-
-通过roundUpToPowerOf2(toSize)可以确保capacity为大于或等于toSize的最接近toSize的二次幂，比如toSize=13,则capacity=16;to_size=16,capacity=16;to_size=17,capacity=32.
-
-```java
-private void inflateTable(int toSize) {
-    int capacity = roundUpToPowerOf2(toSize);//capacity一定是2的次幂
-    //此处为threshold赋值，取capacity*loadFactor和MAXIMUM_CAPACITY+1的最小值，capaticy一定不会超过MAXIMUM_CAPACITY，除非loadFactor大于1
-    threshold = (int) Math.min(capacity * loadFactor, MAXIMUM_CAPACITY + 1);
-    table = new Entry[capacity];
-    initHashSeedAsNeeded(capacity);
-}
-```
-
-roundUpToPowerOf2中的这段处理使得数组长度一定为2的次幂，Integer.highestOneBit是用来获取最左边的bit（其他bit位为0）所代表的数值
-
-```java
- private static int roundUpToPowerOf2(int number) {
-     // assert number >= 0 : "number must be non-negative";
-     return number >= MAXIMUM_CAPACITY
-         ? MAXIMUM_CAPACITY
-         : (number > 1) ? Integer.highestOneBit((number - 1) << 1) : 1;
- }
-```
-
-
-
-#### hash函数
-
-将hashcode转化成数组table的下标，保证保证最终获取的存储位置尽量分布均匀
-
-hash函数计算出的值，通过indexFor进一步处理来获取实际的存储位置
-
-```java
-// 对key的hashcode进一步进行计算以及二进制位的调整等来保证最终获取的存储位置尽量分布均匀
-final int hash(Object k) {
-    int h = hashSeed;
-    if (0 != h && k instanceof String) {
-        return sun.misc.Hashing.stringHash32((String) k);
-    }
-
-    h ^= k.hashCode();
-
-    h ^= (h >>> 20) ^ (h >>> 12);
-    return h ^ (h >>> 7) ^ (h >>> 4);
-}
-```
-
-#### indexFor 获取index
-
-```java
-// 以上hash函数计算出的值，通过indexFor进一步处理来获取实际的存储位置
-static int indexFor(int h, int length) {
-    // 保证获取的index一定在数组范围内 不会越界
-    // 举个例子，默认容量16，length-1=15 ，h=18 二进制与运算后得到 2
-    return h & (length-1);
-}
-```
-
-```
-        1  0  0  1  0    = 18
-    &   0  1  1  1  1    = 15
-    __________________
-        0  0  0  1  0    = 2
-```
-
-#### addEntry 添加元素
+### addEntry 添加元素
 
 当发生哈希冲突并且size大于阈值的时候，需要进行数组扩容
 
@@ -213,7 +301,7 @@ void addEntry(int hash, K key, V value, int bucketIndex) {
 }
 ```
 
-#### resize 扩容
+### resize 扩容
 
 将当前的Entry数组中的元素全部传输过去，扩容后的新数组长度为之前的2倍
 
@@ -233,7 +321,7 @@ void addEntry(int hash, K key, V value, int bucketIndex) {
  }
 ```
 
-#### transfer 转移
+### transfer 转移
 
 将老数组中的数据逐个链表地遍历，扔到新的扩容后的数组中，我们的数组索引位置的计算是通过 对key值的hashcode进行hash扰乱运算后，再通过和 length-1进行位运算得到最终数组索引位置
 
@@ -259,11 +347,9 @@ void transfer(Entry[] newTable, boolean rehash) {
 }
 ```
 
+## get
 
-
-#### get方法
-
-get方法通过key值返回对应value，如果key为null，直接去table[0]处检索
+get方法通过key值返回对应value，如果**key为null，直接去table[0]处检索**
 
 ```java
  public V get(Object key) {
@@ -275,9 +361,7 @@ get方法通过key值返回对应value，如果key为null，直接去table[0]处
  }
 ```
 
-
-
-#### getEntry
+### getEntry
 
 get方法的实现相对简单，key(hashcode)-->hash-->indexFor-->最终索引位置
 
@@ -313,22 +397,12 @@ final Entry<K,V> getEntry(Object key) {
 
 
 
-#### HashMap的整体结构
-
-![img](assets/1024555-20161113235348670-746615111.png)
-
-HashMap由**数组+链表**组成的：数组是HashMap的主体，**链表则是主要为了解决哈希冲突而存在的**
-
-##### 查找流程
-
-如果定位到的数组位置不含链表（当前entry的next指向null）,那么对于查找，添加等操作很快，仅需一次寻址即可；
-
-如果定位到的数组包含链表，对于添加操作，其时间复杂度为O(n)，首先遍历链表，存在即覆盖，否则新增；对于查找操作来讲，仍需遍历链表，然后通过key对象的equals方法逐一比对查找。所以，性能考虑，HashMap中的链表出现越少，性能才会越好
-
-#### 最终存储位置的确定流程
-
-![img](assets/1024555-20161115133556388-1098209938.png)
-
-
-
 ## Entry
+
+
+
+
+
+
+
+[参考1](https://www.cnblogs.com/peizhe123/p/5790252.html)
