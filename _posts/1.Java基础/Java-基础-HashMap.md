@@ -77,7 +77,9 @@ static class Entry<K,V> implements Map.Entry<K,V> {
 
 ### Node Java8之后
 
-当链表过长后，会将链表树化，以提高查询效率
+当链表过长后（超过8），会将链表树化，以提高查询效率
+
+遍历链表时间复杂度为O(n)，查询红黑树的时间复杂度为O(logn)
 
 ```java
 static class Node<K,V> implements Map.Entry<K,V> {
@@ -95,8 +97,6 @@ static class Node<K,V> implements Map.Entry<K,V> {
     ···
 }
 ```
-
-
 
 
 
@@ -119,6 +119,8 @@ static final class TreeNode<K,V> extends LinkedHashMap.Entry<K,V> {
 #### 容量阈值 threshold
 
 当初始化一个空的HashMap对象时，threshold**默认初始值为16**
+
+> 用来衡量hashMap中元素总个数而不是数组的长度
 
 #### 负载因子 DEFAULT_LOAD_FACTOR
 
@@ -218,7 +220,7 @@ static final int hash(Object key) {
 >
 > 目的是 让原始的hashCode的**高16位和低16位都参与运算**，让寻址计算带有整个hash值的特征，减少哈希碰撞的发生
 >
-> 因为后续hash值会与数组长度length进行与运算，**数组长度**的值**不可能超过2的16次方**，所以高16位全部是0，取模时hash值的**前16位的特征会被丢失**
+> 因为后续hash值会与数组长度length进行与运算，**数组长度**的值**不可能超过2的16次方**，所以高16位全部是0（和0做与运算的结果都是0），取模时hash值的**前16位的特征会被丢失**
 >
 > 比如低16位相同，高16位不同的两个hash值，如果不进行优化，会寻址到相同的下标
 
@@ -284,9 +286,7 @@ public V put(K key, V value) {
 
 ### addEntry 添加元素
 
-当发生哈希冲突并且size大于阈值的时候，需要进行数组扩容
-
-扩容时，需要新建一个**长度为之前数组2倍**的新的数组，然后将当前的Entry数组中的元素全部传输过去，扩容后的新数组长度为之前的2倍，所以扩容相对来说是个耗资源的操作
+添加元素之前，检查hashMap当前的元素个数是否超过扩容阈值，并且发生了哈希冲突，则先进行扩容
 
 ```java
 void addEntry(int hash, K key, V value, int bucketIndex) {
@@ -296,14 +296,15 @@ void addEntry(int hash, K key, V value, int bucketIndex) {
         hash = (null != key) ? hash(key) : 0;
         bucketIndex = indexFor(hash, table.length);
     }
-
     createEntry(hash, key, value, bucketIndex);
 }
 ```
 
 ### resize 扩容
 
-将当前的Entry数组中的元素全部传输过去，扩容后的新数组长度为之前的2倍
+当发生哈希冲突并且size大于阈值的时候，需要进行数组扩容
+
+扩容时，需要新建一个**长度为之前数组2倍**的新的数组，然后将当前的Entry数组中的元素全部传输过去，并进行rehash重新分配在数组中的位置，所以扩容相对来说是个耗资源的操作。
 
 ```java
  void resize(int newCapacity) {
