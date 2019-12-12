@@ -11,7 +11,7 @@ description:
 keywords:
 ---
 
-# HashMap数据结构
+# 数据结构
 
 > 数据结构的物理存储结构只有两种：**顺序存储结构**和**链式存储结构**（像栈，队列，树，图等是从逻辑结构去抽象的，**映射到内存中，也这两种物理组织形式**）
 >
@@ -36,17 +36,17 @@ HashMap是以数组为基础实现的。比如我们要新增或查找某个元�
 
 HashMap由**数组+链表**组成的：数组是HashMap的主体，**链表则是主要为了解决哈希冲突而存在的**
 
-![image-20191210101633883](assets\image-20191210101633883.png)
+![image-20191210101633883](\img\in-post\java\image-20191210101633883.png)
 
 #### 寻址流程
 
-如果定位到的数组位置不含链表（当前entry的next指向null）,那么对于查找，添加等操作很快，仅需一次寻址即可；
+如果定位到的数组位置不含链表（当前entry的next指向null）,那么对于查找，添加等操作很快，仅需一次寻址即可
 
 如果定位到的数组包含链表，对于添加操作，其时间复杂度为O(n)，首先遍历链表，存在即覆盖，否则新增；对于查找操作来讲，仍需遍历链表，然后通过key对象的equals方法逐一比对查找。所以，性能考虑，HashMap中的链表出现越少，性能才会越好
 
 #### 存储位置的确定流程
 
-![img](assets/1024555-20161115133556388-1098209938.png)
+![img](\img\in-post\java\1024555-20161115133556388-1098209938.png)
 
 ## 基本数据结构
 
@@ -128,6 +128,8 @@ static final class TreeNode<K,V> extends LinkedHashMap.Entry<K,V> {
     ···
 }
 ```
+
+# 代码实现
 
 ## 重要参数
 
@@ -380,7 +382,9 @@ get方法的实现相对简单 key(hashcode) > hash > indexFor > 最终索引位
 
 #### equals和hashCode
 
-**在重写equals的方法的时候，必须注意重写hashCode方法，同时还要保证通过equals判断相等的两个对象，调用hashCode方法要返回同样的整数值**。而如果equals判断不相等的两个对象，其hashCode可以相同（只不过会发生哈希冲突，应尽量避免）
+hashMap get方法的查找逻辑，会判断hashCode和equals方法，如果两者没有达成一致
+
+**在重写equals的方法的时候，必须注意同时重写hashCode方法，同时还要保证通过equals判断相等的两个对象，调用hashCode方法要返回同样的整数值**。而如果equals判断不相等的两个对象，其hashCode可以相同（只不过会发生哈希冲突，应尽量避免）
 
 如果我们已经对HashMap的原理有了一定了解，这个结果就不难理解了。尽管我们在进行get和put操作的时候，使用的key从逻辑上讲是等值的（通过equals比较是相等的），但由于没有重写hashCode方法，所以put操作时，key(hashcode1)-->hash-->indexFor-->最终索引位置 ，而通过key取出value的时候 key(hashcode1)-->hash-->indexFor-->最终索引位置，由于hashcode1不等于hashcode2，导致没有定位到一个数组位置而返回逻辑上错误的值null（也有可能碰巧定位到一个数组位置，但是也会判断其entry的hash值是否相等，上面get方法中有提到。）
 

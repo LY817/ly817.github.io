@@ -13,7 +13,7 @@ springApplication.run(args);
 
 ### “链式”构建 `SpringApplicationBuilder`
 
-Fluent Builder API
+Fluent Builder API  流畅的构建API
 
 ```java
 new SpringApplicationBuilder(DiveInSpringBootApplication.class)
