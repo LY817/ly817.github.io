@@ -367,48 +367,21 @@ void transfer(Entry[] newTable, boolean rehash) {
 
 get方法通过key值返回对应value，如果**key为null，直接去table[0]处检索**
 
-```java
- public V get(Object key) {
-     //如果key为null,则直接去table[0]处去检索即可
-     if (key == null)
-         return getForNullKey();
-     Entry<K,V> entry = getEntry(key);
-     return null == entry ? null : entry.getValue();
- }
-```
+### getEntry/getNode
 
-### getEntry
+get方法的实现相对简单 key(hashcode) > hash > indexFor > 最终索引位置
 
-get方法的实现相对简单，key(hashcode)-->hash-->indexFor-->最终索引位置
+- 通过key的hash值寻址到找到对应的桶位置
+- 在桶中通过key对象的**hashCode和equals方法**比对，找到对应的Entry或Node，获取对应的value
+  - 如果是链表，则遍历链表
+  - 如果是红黑树，则查询红黑树
 
-找到对应位置table[i]，再查看是否有链表，遍历链表，通过key的equals方法比对查找对应的记录
-
-要注意的是，有人觉得上面在定位到数组位置之后然后遍历链表的时候，e.hash == hash这个判断没必要，仅通过equals判断就可以。其实不然，试想一下，如果传入的key对象重写了equals方法却没有重写hashCode，而恰巧此对象定位到这个数组位置，如果仅仅用equals判断可能是相等的，但其hashCode和当前对象不一致，这种情况，根据Object的hashCode的约定，不能返回当前对象，而应该返回null，后面的例子会做出进一步解释。
-
-```java
-final Entry<K,V> getEntry(Object key) {
-    if (size == 0) {
-        return null;
-    }
-    //通过key的hashcode值计算hash值
-    int hash = (key == null) ? 0 : hash(key);
-    //indexFor (hash&length-1) 获取最终数组索引，然后遍历链表，通过equals方法比对找出对应记录
-    for (Entry<K,V> e = table[indexFor(hash, table.length)];
-         e != null;
-         e = e.next) {
-        Object k;
-        if (e.hash == hash && 
-            ((k = e.key) == key || (key != null && key.equals(k))))
-            return e;
-    }
-    return null;
-}  
-```
+> 要注意的是，有人觉得上面在定位到数组位置之后然后遍历链表的时候，e.hash == hash这个判断没必要，仅通过equals判断就可以。其实不然，试想一下，如果传入的key对象重写了equals方法却没有重写hashCode，而恰巧此对象定位到这个数组位置，如果仅仅用equals判断可能是相等的，但其hashCode和当前对象不一致，这种情况，根据Object的hashCode的约定，不能返回当前对象，而应该返回null，后面的例子会做出进一步解释。
 
 #### equals和hashCode
 
-如果我们已经对HashMap的原理有了一定了解，这个结果就不难理解了。尽管我们在进行get和put操作的时候，使用的key从逻辑上讲是等值的（通过equals比较是相等的），但由于没有重写hashCode方法，所以put操作时，key(hashcode1)-->hash-->indexFor-->最终索引位置 ，而通过key取出value的时候 key(hashcode1)-->hash-->indexFor-->最终索引位置，由于hashcode1不等于hashcode2，导致没有定位到一个数组位置而返回逻辑上错误的值null（也有可能碰巧定位到一个数组位置，但是也会判断其entry的hash值是否相等，上面get方法中有提到。）
+**在重写equals的方法的时候，必须注意重写hashCode方法，同时还要保证通过equals判断相等的两个对象，调用hashCode方法要返回同样的整数值**。而如果equals判断不相等的两个对象，其hashCode可以相同（只不过会发生哈希冲突，应尽量避免）
 
-所以，在重写equals的方法的时候，必须注意重写hashCode方法，同时还要保证通过equals判断相等的两个对象，调用hashCode方法要返回同样的整数值。而如果equals判断不相等的两个对象，其hashCode可以相同（只不过会发生哈希冲突，应尽量避免）
+如果我们已经对HashMap的原理有了一定了解，这个结果就不难理解了。尽管我们在进行get和put操作的时候，使用的key从逻辑上讲是等值的（通过equals比较是相等的），但由于没有重写hashCode方法，所以put操作时，key(hashcode1)-->hash-->indexFor-->最终索引位置 ，而通过key取出value的时候 key(hashcode1)-->hash-->indexFor-->最终索引位置，由于hashcode1不等于hashcode2，导致没有定位到一个数组位置而返回逻辑上错误的值null（也有可能碰巧定位到一个数组位置，但是也会判断其entry的hash值是否相等，上面get方法中有提到。）
 
 [参考1](https://www.cnblogs.com/peizhe123/p/5790252.html)
