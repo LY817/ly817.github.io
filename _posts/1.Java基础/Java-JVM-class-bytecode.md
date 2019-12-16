@@ -8,28 +8,44 @@
 
 # class 字节码文件
 
-Class文件是一组以8位字节为基础单位的二进制流，各个数据项目严格按照顺序紧凑地排列在Class文件之中，中间没有添加任何分隔符，这使得整个Class文件中存储的内容几乎全部是程序运行的必要数据，没有空隙存在。当遇到需要占用8位字节以上空间地数据项时，则会按照高位在前的方式分割成若干个8位字节进行存储。
+Class文件是一组以8位二进制数为基础单位的二进制流
 
-## 内容
+各个数据项目严格按照顺序紧凑地排列在Class文件之中，中间没有添加任何分隔符，这使得整个Class文件中存储的内容几乎全部是程序运行的必要数据，没有空隙存在。当遇到需要占用8位字节以上空间地数据项时，则会按照高位在前的方式分割成若干个8位二进制进行存储。
 
-### java源文件
+## 基本数据类型
+
+### 无符号数
+
+无符号数属于基本的数据类型，以u1，u2，u4，u8来分别代表1个字节，2个字节，4个字节和8个字节的无符号数，无符号数可以用来描述数字、索引引用、数量值或者按照UTF-8编码构成字符串值。
+
+### 表
+
+表是由多个无符号数或者其他表作为数据项构成的复合数据类型，所有表都习惯性地以“ _info”结尾。表用于描述有层次关系的复合结构的数据，整个Class文件本质就是一张表。 
+
+## 文件结构
+
+这种数据结构，类似C语言结构体。这个结构体中只有两种数据类型：**无符号数**和**表**，后面的解析都要以这两种数据类型为基础
 
 ```
-public class Main {
-    public static void main(String[] args) {
-        test();
-    }
-    public static void test() {
-        System.out.println("test");
-    }
+ClassFile {
+    u4 magic;
+    u2 minor_version;
+    u2 major_version;
+    u2 constant_pool_count;
+    cp_info constant_pool[constant_pool_count-1];
+    u2 access_flags;
+    u2 this_class;
+    u2 super_class;
+    u2 interfaces_count;
+    u2 interfaces[interfaces_count];
+    u2 fields_count;
+    field_info fields[fields_count];
+    u2 methods_count;
+    method_info methods[methods_count];
+    u2 attributes_count;
+    attribute_info attributes[attributes_count];
 }
 ```
-
-### 16进制格式打开
-
-开头的魔法值 CA FE BA BE
-
-![image-20191213231428708](assets/image-20191213231428708.png)
 
 - 验证魔法值 Magic Number
 
@@ -61,12 +77,14 @@ public class Main {
   - 常量池数组：从11字节开始
 
     常量池数组可以由不同的元素类型组成，每种元素的结构可以不同，但每一个元素的第一个字符都是一个u1类型作为类型标识位（tag）
-    
+
     ![image-20191215125720525](assets/image-20191215125720525.png)
-    
+
     JVM在解析常量池时，会根据u1类型来获取元素的具体类型
 
--  访问标志 Access Flags
+    JDK1.7后又引入了3种方法动态调用的数据类型结构CONSTANT_MethodHandle_info,CONSTANT_MthodType_info和CONSTANT_InvokeDynamic_info
+
+- 访问控制标志 Access Flags
 
   2个字节
 
@@ -88,11 +106,17 @@ public class Main {
 
   2+n个字节
 
-  表示当前类实现的接口（Object+其他自定义）（引用常量池变量）
+  - 2表示接口个数
+  - n表示n个接口名称字符在常量池的引用 
+
+  表示当前类实现的接口（引用常量池变量）
 
 - Fields
 
   2+n个字节
+
+  - 2表示域的个数
+  - n表示n个域名称字符在常量池的引用 
 
   表示当前类成员变量（this+其他自定义）（引用常量池变量）
 
@@ -100,13 +124,116 @@ public class Main {
 
   2+n个字节
 
-  
+  - 2表示方法的个数
+  - n表示n个方法名称字符在常量池的引用 
 
 - Attributes
 
   2+n个字节
 
+  - 2表示附加属性的个数
+  - n表示n个附加属性字符在常量池的引用 
+
   类的附加属性
+
+## 关键数据类型
+
+### 常量池 Constant pool
+
+Java类中定义的很多信息都是由常量池来维护或描述
+
+#### 数据类型
+
+常量池中主要存储两类数据结构：**字面量**和**符号引用**
+
+##### 字面量
+
+包含bytes，保存实际数据
+
+![image-20191215220101269](assets/image-20191215220101269.png)
+
+- 文本字符串
+- 声明为**final**的常量值
+
+##### 符号引用
+
+包含index引用指针，指向其他符号引用或者字面量
+
+![image-20191215220147034](assets/image-20191215220147034.png)
+
+- 类与接口的全局限定名
+- 字段的名称和描述符
+- 方法的名称和描述符
+
+> 包含tag和**引用指针**，最终通过指向
+
+- 类中定义的方法和变量信息
+
+> 可以把常量池作为Class文件的“资源仓库”，会通过index应用常量池中的常量信息
+
+#### 描述信息
+
+JVM规范中，每个变量、字段、方法都有描述信息，用来描述数据类型、方法的参数列表（包括数量、类型与顺序）与返回值。
+
+描述信息**不包括变量或者方法的名称**
+
+##### 变量描述符
+
+根据描述符规则，**基本数据类型**和代表无返回值的**void类型**都用一个大写字母来表示；对象类型则使用字符L+类的全限定名来表示；（为了压缩字节码文件的体积）
+
+- B - byte
+- C - char
+- D - double
+- F - float
+- I - int
+- J - long
+- S - short
+- Z- boolean
+- V - void
+- Lxxx/xxx/xxx - 对象类型 如 `Ljava/lang/String`
+
+##### 数组
+
+对于数组类型而言，每一个维度使用一个`[`来表示
+
+> `int[]`被记为`[I`；`String[][]`被记为`[[Ljava/lang/String`
+
+##### 方法描述符
+
+用描述符描述方法时，按照`(参数列表) 返回值`的顺序来描述，参数列表按照参数的严格顺序放在一组`()`中
+
+> `String getName(int id,String code)`的描述符为
+>
+> `(I,Ljava/lang/String;) Ljava/lang/String`
+
+### Code
+
+#### 行号表 LineNumberTable
+
+#### 局部变量表 LocalVariableTable
+
+# 示例
+
+### java源文件
+
+```
+public class Main {
+    public static void main(String[] args) {
+        test();
+    }
+    public static void test() {
+        System.out.println("test");
+    }
+}
+```
+
+### 16进制格式打开
+
+开头的魔法值 CA FE BA BE
+
+> 8位二进制数可以表示2位十六进制数
+
+![image-20191213231428708](assets/image-20191213231428708.png)
 
 ### 反编译 Javap -c 
 
@@ -239,118 +366,3 @@ Constant pool:
 }
 SourceFile: "Main.java"
 ```
-
-## 文件结构
-
-这种数据结构，类似C语言结构体。这个结构体中只有两种数据类型：**无符号数**和**表**，后面的解析都要以这两种数据类型为基础
-
-```
-ClassFile {
-    u4 magic;
-    u2 minor_version;
-    u2 major_version;
-    u2 constant_pool_count;
-    cp_info constant_pool[constant_pool_count-1];
-    u2 access_flags;
-    u2 this_class;
-    u2 super_class;
-    u2 interfaces_count;
-    u2 interfaces[interfaces_count];
-    u2 fields_count;
-    field_info fields[fields_count];
-    u2 methods_count;
-    method_info methods[methods_count];
-    u2 attributes_count;
-    attribute_info attributes[attributes_count];
-}
-```
-
-### 无符号数
-
-无符号数属于基本的数据类型，以u1，u2，u4，u8来分别代表1个字节，2个字节，4个字节和8个字节的无符号数，无符号数可以用来描述数字、索引引用、数量值或者按照UTF-8编码构成字符串值。
-
-### 表
-
-表是由多个无符号数或者其他表作为数据项构成的复合数据类型，所有表都习惯性地以“ _info”结尾。表用于描述有层次关系的复合结构的数据，整个Class文件本质就是一张表。 
-
-## 关键数据类型
-
-### 常量池 Constant pool
-
-Java类中定义的很多信息都是由常量池来维护或描述
-
-#### 数据类型
-
-常量池中主要存储两类数据结构：**字面量**和**符号引用**
-
-##### 字面量
-
-包含bytes，保存实际数据
-
-![image-20191215220101269](assets/image-20191215220101269.png)
-
-- 文本字符串
-- 声明为**final**的常量值
-
-##### 符号引用
-
-包含index引用指针，指向其他符号引用或者字面量
-
-![image-20191215220147034](assets/image-20191215220147034.png)
-
-- 类与接口的全局限定名
-- 字段的名称和描述符
-- 方法的名称和描述符
-
-> 包含tag和**引用指针**，最终通过指向
-
-
-
-
-
-- 类中定义的方法和变量信息
-- 
-
-> 可以把常量池作为Class文件的“资源仓库”，会通过index应用常量池中的常量信息
-
-#### 描述信息
-
-JVM规范中，每个变量、字段、方法都有描述信息，用来描述数据类型、方法的参数列表（包括数量、类型与顺序）与返回值。
-
-描述信息**不包括变量或者方法的名称**
-
-##### 变量描述符
-
-根据描述符规则，**基本数据类型**和代表无返回值的**void类型**都用一个大写字母来表示；对象类型则使用字符L+类的全限定名来表示；（为了压缩字节码文件的体积）
-
-- B - byte
-- C - char
-- D - double
-- F - float
-- I - int
-- J - long
-- S - short
-- Z- boolean
-- V - void
-- Lxxx/xxx/xxx - 对象类型 如 `Ljava/lang/String`
-
-##### 数组
-
-对于数组类型而言，每一个维度使用一个`[`来表示
-
-> `int[]`被记为`[I`；`String[][]`被记为`[[Ljava/lang/String`
-
-##### 方法描述符
-
-用描述符描述方法时，按照`(参数列表) 返回值`的顺序来描述，参数列表按照参数的严格顺序放在一组`()`中
-
-> `String getName(int id,String code)`的描述符为
->
-> `(I,Ljava/lang/String;) Ljava/lang/String`
-
-### Code
-
-#### 行号表 LineNumberTable
-
-#### 局部变量表 LocalVariableTable
-
