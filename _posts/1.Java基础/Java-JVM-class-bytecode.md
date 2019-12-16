@@ -47,94 +47,132 @@ ClassFile {
 }
 ```
 
-- 验证魔法值 Magic Number
+### 验证魔法值 Magic Number
 
-  4个字节
+4个字节
 
-  Java 字节码文件的前4个字节固定为 `CA FE BA BE`
+Java 字节码文件的前4个字节固定为 `CA FE BA BE`
 
-- JDK的版本号 Version
+### JDK的版本号 Version
 
-  2+2个字节
+2+2个字节
 
-  - 5,6字节表示minor version
-  - 7,8字节表示major version
+- 5,6字节表示minor version
+- 7,8字节表示major version
 
-- 常量池 Constant Pool
+### 常量池 Constant Pool
 
-  2+n个字节
+2+n个字节
 
-  从第9个字节开始为常量池，长度不定。由常量池数量和常量池数组构成
+从第9个字节开始为常量池，长度不定。由常量池数量和常量池数组构成
 
-  - 常量池数组长度：9,10字节
+- 常量池数组长度：9,10字节
 
-    **常量池数组中元素的数量 = 常量池数组长度 - 1**
+  **常量池数组中元素的数量 = 常量池数组长度 - 1**
 
-    常量池数组中index为0不计入常量池，是保留常量，对应的null值
+  常量池数组中index为0不计入常量池，是保留常量，对应的null值
 
-    常量池的索引从1而非0开始
+  常量池的索引从1而非0开始
 
-  - 常量池数组：从11字节开始
+- 常量池数组：从11字节开始
 
-    常量池数组可以由不同的元素类型组成，每种元素的结构可以不同，但每一个元素的第一个字符都是一个u1类型作为类型标识位（tag）
+  常量池数组可以由不同的元素类型组成，每种元素的结构可以不同，但每一个元素的第一个字符都是一个u1类型作为类型标识位（tag）
 
-    ![image-20191215125720525](assets/image-20191215125720525.png)
+  ![image-20191215125720525](assets/image-20191215125720525.png)
 
-    JVM在解析常量池时，会根据u1类型来获取元素的具体类型
+  JVM在解析常量池时，会根据u1类型来获取元素的具体类型
 
-    JDK1.7后又引入了3种方法动态调用的数据类型结构CONSTANT_MethodHandle_info,CONSTANT_MthodType_info和CONSTANT_InvokeDynamic_info
+  JDK1.7后又引入了3种方法动态调用的数据类型结构CONSTANT_MethodHandle_info,CONSTANT_MthodType_info和CONSTANT_InvokeDynamic_info
 
-- 访问控制标志 Access Flags
+### 类的访问控制标志 Access Flags
 
-  2个字节
+2个字节
 
-  表示这个class类的访问权限 public/protected/private
+表示这个class类的访问权限 public/protected/private
 
-- This Class Name
+![image-20191216204247104](assets/image-20191216204247104.png)
 
-  2个字节
+### 类名 This Class Name
 
-  表示当前类的名字（引用常量池中的字符）
+2个字节
 
-- Super Class Name
+表示当前类的名字（引用常量池中的字符）
 
-  2个字节
+### 父类名 Super Class Name
 
-  表示当前类继承的父类（引用常量池的字符）
+2个字节
 
-- Interfaces
+表示当前类继承的父类（引用常量池的字符）
 
-  2+n个字节
+### 接口列表 Interfaces
 
-  - 2表示接口个数
-  - n表示n个接口名称字符在常量池的引用 
+2+n个字节
 
-  表示当前类实现的接口（引用常量池变量）
+- 2表示接口个数
+- n表示n个接口名称字符在常量池的引用 
 
-- Fields
+表示当前类实现的接口（引用常量池变量）
 
-  2+n个字节
+### 字段列表 Fields
 
-  - 2表示域的个数
-  - n表示n个域名称字符在常量池的引用 
+2+n个字节
 
-  表示当前类成员变量（this+其他自定义）（引用常量池变量）
+- 2表示域的个数
+- n表示方法表
 
-- Methods
+表示当前类成员变量（引用常量池变量）
 
-  2+n个字节
+#### field_info
 
-  - 2表示方法的个数
-  - n表示n个方法名称字符在常量池的引用 
+```
+method_info {
+	u2 access_flags;		// 方法的访问权限控制标志
+	u2 name_index;			// 方法名称指针 指向常量池
+	u2 descriptor_index;	// 方法描述符指针 指向常量池
+	u2 attributes_acount;	// 属性列表长度
+	attribute_info attributes[attributes_count];// 属性列表
+}
+```
 
-- Attributes
+### 方法列表 Methods
 
-  2+n个字节
+2+n个字节
 
-  - 2表示附加属性的个数
-  - n表示n个附加属性字符在常量池的引用 
+- 2表示方法的个数
+- n表示方法表
 
-  类的附加属性
+#### method_info结构
+
+```
+method_info {
+	u2 access_flags;		// 方法的访问权限控制标志
+	u2 name_index;			// 方法名称指针 指向常量池
+	u2 descriptor_index;	// 方法描述符指针 指向常量池
+	u2 attributes_acount;	// 属性列表长度
+	attribute_info attributes[attributes_count];// 属性列表
+}
+```
+
+#### attribute_info
+
+```
+attribute_info {
+	u2 attribute_name_index;	// 属性名索引
+	u4 attribute_length;
+	u1 info[attribute_length];
+}
+```
+
+方法属性列表的第一个attribute_info为**Code**，表示方法的执行代码（jvm指令 助记符）
+
+### 附加属性列表 Attributes
+
+2+n个字节
+
+- 2表示附加属性的个数
+- n表示n个附加属性字符在常量池的引用 
+
+class字节码的附加属性 如SourceFile源文件名称 指向常量池中对应的名称
 
 ## 关键数据类型
 
@@ -208,9 +246,53 @@ JVM规范中，每个变量、字段、方法都有描述信息，用来描述�
 
 ### Code
 
+方法属性列表的第一个attribute_info为**Code_attribute**，保存方法的执行代码（jvm指令 助记符）
+
+```
+Code_attribute {
+	u2 attribute_name_index; 	// 属性名指针
+	u4 attribute_length;		// 属性长度
+	u2 max_stack;				// 运行时操作数栈的最大深度
+	u2 max_locals;		// 方法执行期间创建的局部变量的数目（包括传入的参数和局部变量）
+	u4 code_length;				// code表长度
+	u1 code[code_length];		// code数组 方法中的jvm字节码指令 助记符
+	u2 exception_table_length;	// 异常表长度
+	{
+		u2 start_pc;			// code数组中起始
+		u2 end_pc;				// code数组中结束 起始到结束中间的code指令抛出的异常
+								// 会被这个表项处理
+		u2 handler_pc;			// 指向处理异常的代码开始处
+		u2 catch_type;			// 指向被处理的异常类型（常量池中的异常类）
+								// catch_type为0时表示处理所有的异常
+	} exception_table[exception_table_length];// 异常表数组
+	u2 attributes_count;
+	attribute_info attributes[attributes_count];
+}
+```
+
 #### 行号表 LineNumberTable
 
+表示code数组中的字节码和Java源代码之间的关系。
+
+调试的时候定位到代码执行的行数
+
+运行时抛异常，会把源代码中的对应行号打印出来
+
+```
+LineNumberTable_attribute {
+	u2 attribute_name_index;
+	u4 attribute_length;
+	u2 line_number_table_length;
+	{
+		u2 start_pc;
+		u2 line_number;
+	} line_number_table[line_number_table_length];
+}
+```
+
 #### 局部变量表 LocalVariableTable
+
+
 
 # 示例
 
