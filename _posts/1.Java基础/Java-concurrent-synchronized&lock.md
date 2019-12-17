@@ -14,7 +14,7 @@ keywords:
 
 # 相关概念
 
-## 锁
+## Java锁实现
 
 锁属于抽象的概念，分为两个角色：共用资源和共用资源的使用者
 
@@ -149,6 +149,12 @@ CAS的全称为Compare-And-Swap，是一条CPU的原子指令，其作用是让C
 - 通过在总线加LOCK#锁的方式 
 
 - 通过缓存一致性协议 
+
+## AQS
+
+Abstract Queue Synchronizer基于队列的多线程同步器
+
+
 
 # 同步API
 
@@ -494,9 +500,9 @@ interrupt()的作用是中断本线程。
 中断一个“已终止的线程”不会产生任何操作。
 ```
 
-## `Lock` 线程重入锁
+## `ReentrantLock` 线程重入锁
 
-Lock是对synchronized同步锁的补充
+Lock API是对synchronized同步锁的补充
 
 > 如果这个获取锁的线程由于要等待IO或者其他原因（比如调用sleep方法）被阻塞了，但是又没有释放锁，其他线程便只能等待，试想一下，这多么影响程序执行效率。
 >
@@ -506,7 +512,21 @@ Lock是对synchronized同步锁的补充
 >
 > 而Lock是在程序中主动控制资源的上锁和解锁，上锁和解锁直接操作硬件
 
-## API
+### 实现
+
+基于AQS实现
+
+![image-20191217131953004](assets\image-20191217131953004.png)
+
+#### 获取锁
+
+#### 释放锁
+
+#### 重入
+
+count
+
+### API
 
 ```JAVA
 public interface Lock {
@@ -521,13 +541,13 @@ public interface Lock {
 
 必须主动去释放锁，并且在**发生异常时，不会自动释放锁**
 
-### 获取锁
+#### 获取锁
 
-#### lock()
+##### lock()
 
 > 拿不到锁，就一直阻塞(谁劝也没用)
 
-使用Lock必须在try{}catch{}块中进行，并且将释放锁的操作放在finally块中进行，以保证锁一定被被释放，防止死锁的发生
+使用**Lock必须在try{}catch{}块中进行，并且将释放锁的操作放在finally块中进行，以保证锁一定被被释放，防止死锁的发生**
 
 - 当锁可用，并且当前线程没有持有该锁，直接获取锁并把count set为1.
 - 当锁可用，并且当前线程已经持有该锁，直接获取锁并把count增加1.
@@ -545,7 +565,7 @@ try{
 }
 ```
 
-#### lockInterruptibly()
+##### lockInterruptibly()
 
 > 与lock方法对应，可以理解为“听劝”的lock方法
 
@@ -571,7 +591,7 @@ public void method() throws InterruptedException {
 }
 ```
 
-#### tryLock()
+##### tryLock()
 
 > 马上返回，拿到锁返回true，没拿到返回false
 
@@ -583,9 +603,7 @@ public void method() throws InterruptedException {
 
 即使该锁是公平锁fairLock，使用tryLock()的方式获取锁也会是非公平的方式，只要获取锁时该锁可用那么就会直接获取并返回true。这种直接插入的特性在一些特定场景是很有用的。但是如果就是想使用公平的方式的话，可以试一试tryLock(0, TimeUnit.SECONDS)，几乎跟公平锁没区别，只是会监测中断事件。
 
-
-
-#### tryLock(long time, TimeUnit unit)
+##### tryLock(long time, TimeUnit unit)
 
 > 带时间限制的tryLock()，拿不到lock，就等一段时间，超时返回false
 
@@ -606,6 +624,16 @@ if(lock.tryLock()) {
 }
 ```
 
+#### 释放锁
+
+##### unlock()
+
+### 公平锁与非公平锁
+
+ReentranLock默认无参的构造方法创建的锁是**非公平锁**。之前处于AQS等待队列中的线程与新来的线程一起竞争锁
+
+使用`ReentranLock(boolean fair)`构造方法，fair = true创建一个公平锁：当等待队列中有等待线程时，新来的线程会进入等待队列
+
 ## atomic包
 
-JUC下的atomic包使用CAS(compare and set)机制实现线程并发操作的数据一致性
+JUC下的atomic包使用**CAS(compare and set)**机制实现线程并发操作的数据一致性
