@@ -10,7 +10,7 @@
 
 Class文件是一组以8位二进制数为基础单位的二进制流
 
-各个数据项目严格按照顺序紧凑地排列在Class文件之中，中间没有添加任何分隔符，这使得整个Class文件中存储的内容几乎全部是程序运行的必要数据，没有空隙存在。当遇到需要占用8位字节以上空间地数据项时，则会按照高位在前的方式分割成若干个8位二进制进行存储。
+各个数据项目严格按照顺序紧凑地排列在Class文件之中，中间**没有添加任何分隔符**（根据JVM规范，按顺序依次读取解析），这使得整个Class文件中存储的内容几乎全部是程序运行的必要数据，没有空隙存在。当遇到需要占用8位字节以上空间地数据项时，则会按照高位在前的方式分割成若干个8位二进制进行存储。
 
 ## 基本数据类型
 
@@ -183,7 +183,8 @@ Code_attribute {
 	u2 attribute_name_index; 	// 属性名指针  指向常量池中的“Code”
 	u4 attribute_length;		// 后面从max_stack到attribute_info的字节长度
 	u2 max_stack;				// 运行时操作数栈的最大深度
-	u2 max_locals;		// 方法执行期间创建的局部变量的数目（包括传入的参数和局部变量）
+	u2 max_locals;		
+	// 方法执行期间创建的局部变量的数目（包括传入的参数和局部变量）
 	u4 code_length;				// code数组长度 表示方法包含字节码指令的个数
 	u1 code[code_length];		// code数组 方法中的jvm字节码指令 
 	u2 exception_table_length;	// 异常表长度
@@ -204,7 +205,7 @@ Code_attribute {
 
 jvm字节码指令： **一个字节对应一个JVM操作** （根据[Java指令集](https://docs.oracle.com/javase/specs/jvms/se8/html/jvms-6.html)对应）
 
-一个或多个（有些指令需要参数，会将后面的几个字节作为参数指针）code元素表示一行反编译出来的助记符
+`code[code_length]` 一个或多个（有些指令需要参数，会将后面的几个字节作为参数指针）code元素表示一行反编译出来的助记符
 
 ##### 行号表 LineNumberTable
 
@@ -241,7 +242,9 @@ LocalVariableTable_attribute {
 }
 ```
 
-局部变量表中至少有一个局部变量`this`
+- 局部变量表中至少有一个局部变量`this`
+- 方法列表属于局部变量表
+- 方法内部声明的变量也属于局部变量表
 
 ### 附加属性列表 Attributes
 
@@ -250,7 +253,7 @@ LocalVariableTable_attribute {
 > - 2表示附加属性的个数
 > - n表示n个附加属性字符在常量池的引用 
 
-class字节码的附加属性 如SourceFile源文件名称 指向常量池中对应的名称
+class字节码的附加属性 如SourceFile源文件名称（指向常量池中对应的名称）
 
 ## 关键数据类型
 
@@ -363,9 +366,11 @@ public class org.ly817.sparrow.Main {
 
   public static void test();
     Code:
-       0: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+       0: getstatic     #3                  
+       // Field java/lang/System.out:Ljava/io/PrintStream;
        3: ldc           #4                  // String test
-       5: invokevirtual #5                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+       5: invokevirtual #5                  
+       // Method java/io/PrintStream.println:(Ljava/lang/String;)V
        8: return
 }
 ```
@@ -391,11 +396,14 @@ Constant pool:
    // #23 指向方法名称/类型描述符（test:()V 表示名为test方法 入参为空 返回值为void）
    #2 = Methodref          #6.#23         // org/ly817/sparrow/Main.test:()V 
    // 静态方法的引用
-   #3 = Fieldref           #24.#25   // java/lang/System.out:Ljava/io/PrintStream;
+   #3 = Fieldref           #24.#25   
+   // java/lang/System.out:Ljava/io/PrintStream;
+   
    // String作为特殊的对象引用指向utf-8
    // 表示System.out.println("test")中的"test"字符串
    #4 = String             #19            // test
-   #5 = Methodref          #26.#27        // java/io/PrintStream.println:(Ljava/lang/String;)V
+   #5 = Methodref          #26.#27        
+   // java/io/PrintStream.println:(Ljava/lang/String;)V
    // 定义类 指向类限定名常量
    #6 = Class              #28            // org/ly817/sparrow/Main
    // 定义继承接口 指向接口限定名常量
