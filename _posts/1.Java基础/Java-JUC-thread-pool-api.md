@@ -1,19 +1,25 @@
 # 概述
 
-### 线程池的作用
+## 作用
 
 * 减少线程创建和销毁带来的资源消耗
 * 复用线程
 
 jdk提供的多线程操作的工具类是`java.util.concurrent`包下的Executor相关的方法
 
-### 多线程相关类的关系图
+## 线程池原理
+
+### 无界队列线程池
+
+
+
+
+
+
+
+# 继承关系
 
 ![img](assets\5bee9c9be4b0d74dc543e107.png)
-
-# 继承链
-
-![1555208240113](assets\1555208240113.png)
 
 ## Executor
 
@@ -89,7 +95,6 @@ public interface Executor {
 > * submit方法扩展了父类的execute方法，返回一个任务执行线程的“回执” Future，可以通过对Future对象的操作，与执行的线程进行交互（得到返回值、中断、挂起）
 > * invokeAny和invokeAll用于批量执行
 >
-> 
 
 ## AbstractExecutorService
 
@@ -112,28 +117,31 @@ ExecutorService的默认**实现**类，使用RunnableFuture实现了submit、in
 
 ## ThreadPoolExecutor
 
-具体**线程池**的执行器实现
+继承自`AbstractExecutorService`，具体**线程池**的执行器实现
 
 ![1555209402813](assets\1555209402813.png)
 
-
-
-#### 构造器
+### 构造器
 
 ```java
 ThreadPoolExecutor(int corePoolSize, 
-                   int maximumPoolSize, 
-                   long keepAliveTime, TimeUnit unit, 
+                   int maximumPoolSize,long keepAliveTime, TimeUnit unit, 
                    BlockingQueue workQueue, 
                    RejectedExecutionHandler handler) 
 ```
 
 参数解释：
 
-- `corePoolSize` 为线程池的基本大小。
-- `maximumPoolSize` 为线程池**最大**线程大小。
-- `keepAliveTime` 和 `unit` 则是线程空闲后的存活时间。
+- `corePoolSize` 为线程池的基本大小
+
+- `maximumPoolSize` 为线程池**最大**线程大小
+
+  当线程池中corePoolSize的线程满负荷并且workQueue等待队列中的任务也满了，就会创建新的**额外线程**来处理任务 
+
+- `keepAliveTime` 和 `unit` 则是上述额外创建的线程**空闲后的存活时间**
+
 - `workQueue` 用于存放任务的阻塞队列（等待队列）
+
 - `handler` 当队列和最大线程池都满了之后的**饱和策略**
   - AbortPolicy：直接抛出异常（默认策略）
   - CallerRunsPolicy：使用调用者所在的线程来执行任务
@@ -142,7 +150,7 @@ ThreadPoolExecutor(int corePoolSize,
 
 - `threadFactory`：创建新线程的工程类，默认为Executors.defaultThreadFactory()
 
-#### 状态
+### 状态转换
 
 ![1555213917302](assets\1555213917302.png)                      
 
@@ -165,7 +173,7 @@ private static final int TERMINATED =  3 << COUNT_BITS;
 
 - `TERMINATED`： 终止状态，当执行 `terminated()` 后会更新为这个状态。
 
-#### 线程池大小设置
+#### 线程池大小设置规则
 
 **CPU密集型**：单个任务处理耗时长
 
@@ -188,40 +196,86 @@ protected void afterExecute(Runnable r, Throwable t) { }
 protected void terminated() { }
 ```
 
+## `Executors`
 
-
-
-
-## `Executors` 工具包
-
-通过执行器工具类`Executors`来创建，是对ThreadPoolExecutor进行封装，创建常用场景的线程池
+对ThreadPoolExecutor进行封装，通过执行器工具类`Executors`来创建常用场景的线程池
 
 在 JDK 1.5 之后加入了相关的 api，常见的**创建线程池方式**有以下几种：
 
-- `newCachedThreadPool()`：**无限**线程池，用于处理大量短时间工作任务
+### `newCachedThreadPool()`
 
-  - 试图缓存线程并重用，当无缓存线程可用时，就会创建新的工作线程
-  - 如果线程闲置的时间超过阈值，则会被终止并移除缓存
-  - 系统长期闲置时，不消耗资源
-  - 不需要设置参数，全自动
+```java
+public static ExecutorService newCachedThreadPool() {
+    return new ThreadPoolExecutor(0, Integer.MAX_VALUE,
+                                  60L, TimeUnit.SECONDS,
+                                  new SynchronousQueue<Runnable>());
+}
+```
 
-- `newFixedThreadPool(nThreads)`：创建**固定大小**的线程池
+**无限**线程池
 
-- `newSingleThreadExecutor()`：创建**单个**线程的线程池
+- 试图缓存线程并重用，当无缓存线程可用时，就会创建新的工作线程
+- 如果线程闲置的时间超过阈值(60s)，则会被终止并移除缓存
+- 系统长期闲置时，不消耗资源
+- 用于处理大量短时间工作任务
 
-  用于顺序执行任务
+### `newFixedThreadPool(nThreads)`
 
-  如果线程异常结束，会有另一个线程取代
+```java
+public static ExecutorService newFixedThreadPool(int nThreads) {
+    return new ThreadPoolExecutor(nThreads, nThreads,
+                                  0L, TimeUnit.MILLISECONDS,
+                                  new LinkedBlockingQueue<Runnable>());
+}
+```
 
-- `newSingleThreadScheduledExecutor()`和`newScheduledThreadPool(int corePoolSize)`
+创建**固定大小**的线程池 **无界等待队列**
 
-  定期执行工作调度，两者的区别在与单一工作线程和多工作线程
+- corePoolSize = maximumPoolSize，不会创建额外的线程来处理
+- 等待队列是无界的，永远不会满
 
-- `newWorkStealingPool()`：JDK1.8引入
+### `newSingleThreadExecutor()`
 
-  内部会构建ForkJoinPool，利用work-stealing算法，并行的处理任务，不保证处理顺序
+```java
+public static ExecutorService newSingleThreadExecutor() {
+    return new FinalizableDelegatedExecutorService
+        (new ThreadPoolExecutor(1, 1,
+                                0L, TimeUnit.MILLISECONDS,
+                                new LinkedBlockingQueue<Runnable>()));
+}
+```
 
-这三个方法都是利用 `ThreadPoolExecutor` 类实现
+创建**单个**线程的线程池
+
+用于顺序执行任务，如果线程异常结束，会有另一个线程取代
+
+### `ScheduledExecutor()`
+
+`newSingleThreadScheduledExecutor()`和`newScheduledThreadPool(int corePoolSize)`
+
+```java
+// 父类为ThreadPoolExecutor
+public ScheduledThreadPoolExecutor(int corePoolSize,
+                                   ThreadFactory threadFactory) {
+    super(corePoolSize, Integer.MAX_VALUE, 0, NANOSECONDS,
+          new DelayedWorkQueue(), threadFactory);
+}
+
+public static ScheduledExecutorService newSingleThreadScheduledExecutor() {
+    return new DelegatedScheduledExecutorService
+        (new ScheduledThreadPoolExecutor(1));
+}
+
+public static ScheduledExecutorService newScheduledThreadPool(int corePoolSize) {
+    return new ScheduledThreadPoolExecutor(corePoolSize);
+}
+```
+
+定期执行工作调度，两者的区别在与单一工作线程和多工作线程
+
+### `newWorkStealingPool()`
+
+JDK1.8引入，内部会构建ForkJoinPool，利用work-stealing算法，并行的处理任务，**不保证处理顺序**
 
 
 
