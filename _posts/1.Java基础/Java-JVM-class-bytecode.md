@@ -10,7 +10,7 @@
 
 Class文件是一组以8位二进制数为基础单位的二进制流
 
-各个数据项目严格按照顺序紧凑地排列在Class文件之中，中间**没有添加任何分隔符**（根据JVM规范，按顺序依次读取解析），这使得整个Class文件中存储的内容几乎全部是程序运行的必要数据，没有空隙存在。当遇到需要占用8位字节以上空间地数据项时，则会按照高位在前的方式分割成若干个8位二进制进行存储。
+各个数据项目严格按照顺序紧凑地排列在Class文件之中，中间**没有添加任何分隔符**（根据JVM规范，按顺序依次读取并解析），这使得整个Class文件中存储的内容几乎全部是程序运行的必要数据，没有空隙存在。当遇到需要占用8位字节以上空间地数据项时，则会按照高位在前的方式分割成若干个8位二进制进行存储。
 
 ## 基本数据类型
 
@@ -32,7 +32,7 @@ ClassFile {
     u2 minor_version;
     u2 major_version;
     u2 constant_pool_count;
-    cp_info constant_pool[constant_pool_count-1];
+    cp_info constant_pool[constant_pool_count - 1];
     u2 access_flags;
     u2 this_class;
     u2 super_class;
