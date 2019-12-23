@@ -91,7 +91,7 @@ eureka:
   client:
     # 指定注册中心
     serviceUrl:
-      defaultZone: http://anohterpeer1:8761/eureka,http://anohterpeer2:8761/eureka
+      defaultZone: ["http://anohterpeer1:8761/eureka","http://anohterpeer2:8761/eureka"]
     # 是否作为一个Eureka Client 注册到Eureka Server上去
     register-with-eureka: true 
     # 是否需要从Eureka Server上拉取注册信息到本地。
