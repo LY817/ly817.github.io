@@ -1,6 +1,6 @@
-### 消息常用设置
+## 常用消息模式
 
-#### 延时消息
+### 延时消息
 
 通过设置消息对象的DelayTimeLevel来设置消息的延时时间
 
@@ -12,17 +12,19 @@
 Message.setDelayTimeLevel(int delayLevel)
 ```
 
-#### 批量消息
+### 批量消息
 
 send方法可以发送Message集合，发送批量消息。总大小小于4M
 
-### Producer消息投递方式
+## Producer消息投递方式
 
+> 构建producer实例
+>
 > 设置Namesrv地址（集群模式使用“;”隔开）
 >
 > 指定投递到的topic
 
-#### 同步消息
+### 同步消息
 
 producer发送消息后进入阻塞状态，只有确定消息被broker正常接收（接收到broker正常接收的响应），才返回，进行后面的逻辑。
 
@@ -30,7 +32,7 @@ producer发送消息后进入阻塞状态，只有确定消息被broker正常接
 
 > 可靠性高，用来发送重要的消息通知
 
-#### 异步消息
+### 异步消息
 
 producer异步的发送消息给broker，发送线程发送后就返回
 
@@ -53,7 +55,7 @@ producer.send(msg,new SendCallback(){
 });
 ```
 
-#### 单向消息
+### 单向消息
 
 producer发送单向消息后没有返回值，用于不关心发送结果的场景，比如日志
 
@@ -62,31 +64,49 @@ producer发送单向消息后没有返回值，用于不关心发送结果的场
 producer.sendOneway(msg);
 ```
 
-### Consumer消息消费方式
+## Consumer消息消费方式
 
 > 定义Consumer类型（服务端推push或者客户端拉pull）
 > 设置Namesrv地址（集群模式使用“;”隔开）
 > 指定**订阅**的topic和tag过滤表达式
 > 注册消息监听器，用来处理消费到的消息
 
-#### pull模式和push模式
+### pull和push
 
 创建consumer实例时选择
 
-#### 广播模式和负载均衡模式
+#### push 推模式
+
+`DefaultMQPushConsumer`
+
+Consumer客户端会与broker建立长连接，broker会主动把消息发送个客户端，消费者是被动的接收Broker推送给过来的消息
+
+> Push消费模式本质底层也是基于消费者主动拉取的模式来实现的，只不过他的名字叫做Push而已，意思是Broker会尽可能实时的把新消息交给消费者机器来进行处理，他的消息**时效性更好**
+
+#### pull模式
+
+`DefaultMQPullConsumer`
+
+Consumer客户端会定时发送请求到客户端拉取消息
+
+### 广播模式和负载均衡模式
 
 在consumer设置中`setMessageModel`设置
 
 - `MessageModel.CLUSTERING` 负载均衡模式（**默认**）
 - `MessageModel.BROADCAST`广播模式
 
-### 顺序消息
+### 消费回调方法
+
+创建客户端实例时，可以通过registerMessageListener来注册自定义消息处理逻辑
+
+## 顺序消息
 
 每一个topic有多个队列（默认4个）用来提高读写性能（使用多线程读写）
 
 需要保证消息的顺序性时，只需要把需要保持顺序消息都投递到同一个队列（保证局部的顺序性）
 
-#### Producer发送方式
+### Producer发送方式
 
 ```java
 producer.send(msg,new MessageQueueSelector(){
@@ -107,7 +127,7 @@ send方法的参数
 2. MessageQueueSelector：自定义消息队列选择器 
 3. mark：消息业务标识（例如订单号），用来判断消息是否为同一类（例如属于同一个订单的操作则通过选择器路由到同一个queue中来保证顺序）
 
-#### Consumer接收方式
+### Consumer接收方式
 
 ```java
 consumer.registerMessageListener(
@@ -124,11 +144,11 @@ consumer.registerMessageListener(
 
 > 问题：负载均衡模式下（多个consumer进程同时消费），如何保证顺序消息
 
-### 消息过滤
+## 消息过滤
 
 消费消息前，可以通过**表达式**判断message的属性（tag和property）来筛选
 
-#### subExpression
+### subExpression
 
 只能过滤tag
 
@@ -137,7 +157,7 @@ consumer.registerMessageListener(
 public void subscribe(String topic, String subExpression)；
 ```
 
-#### MessageSelector
+### MessageSelector
 
 可以过滤tag和property
 

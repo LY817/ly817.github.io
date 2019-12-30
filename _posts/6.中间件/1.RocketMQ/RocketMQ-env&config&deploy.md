@@ -76,8 +76,6 @@ OS会把一部分磁盘空间作为**swap区域**，如果有的进程不太活�
 -XX:MaxDirectMemorySize=15g -XX:-UseLargePages -XX:-UseBiasedLocking
 ```
 
-
-
 ## RocketMQ配置
 
 
