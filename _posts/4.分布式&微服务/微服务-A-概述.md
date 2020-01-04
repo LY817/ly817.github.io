@@ -6,9 +6,15 @@
 
 
 
-# SpringCloud规范
+# SpringCloud
 
-微服务公共关注点，不同的厂家根据SpringCloud提供的规范提供实现
+## 版本
+
+
+
+## 规范
+
+微服务公共关注点，不同的厂商根据SpringCloud提供的规范提供实现，如Netflix和Alibaba
 
 ### 服务发现和负载均衡
 
