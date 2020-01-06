@@ -86,7 +86,7 @@ JDK中的`java.lang.ClassLoader`是一个抽象类，有多个不同实现
 
 #### 启动类加载器（Bootstrap Class-Loader）
 
-加载 jre/lib下面的jar文件，如rt.jar等运行时的核心类库，如`java.lang.*`。启动类加载器从系统属性`sun.boot.class.path`所指定的目录中加载类库
+加载 **`jre/lib`**下面的jar文件，如rt.jar等运行时的核心类库，如`java.lang.*`。启动类加载器从系统属性`sun.boot.class.path`所指定的目录中加载类库
 
 启动类加载器的实现依赖于底层操作系统，由C++实现，属于JVM实现的一部分
 
@@ -96,7 +96,7 @@ JDK中的`java.lang.ClassLoader`是一个抽象类，有多个不同实现
 
 父加载器是BootstrapClassLoader
 
-负责加载我们放到`jre/lib/ext/`目录下面的jar包，这就是所谓的extension机制。该目录也可以通过设置 `java.ext.dirs`来覆盖
+负责加载我们放到**`jre/lib/ext`**目录下面的jar包，这就是所谓的extension机制。该目录也可以通过设置 `java.ext.dirs`来覆盖
 
 继承`java.lang.ClassLoader`
 
@@ -115,15 +115,19 @@ JDK中的`java.lang.ClassLoader`是一个抽象类，有多个不同实现
 
 父加载器为**应用类加载器**
 
-用户可以定制类的加载方式如SpringBoot启动jat jar使用的LaunchedURLClassLoader
+用户可以定制类的加载方式
+
+如SpringBoot启动jat jar使用的LaunchedURLClassLoader
+
+### 实现自定义ClassLoader
 
 继承`java.lang.ClassLoader`
-
-### 自定义ClassLoader
 
 #### ClassLoader抽象类
 
 ##### 构造方法
+
+用于指定类加载器的父亲
 
 ###### 无参构造方法
 

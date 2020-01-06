@@ -44,6 +44,8 @@ BeanFactory通过读取的Bean元信息（BeanDefinition）使用动态代理创
 
 通过反射来注入Bean的依赖
 
+
+
 # AOP
 
 基于IoC设计模式，Spring容器可以对应Bean进行统一管理
