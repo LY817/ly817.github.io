@@ -24,7 +24,7 @@ Java中的synchronized通过操作mark word来实现对象锁
 
 markword是java对象数据结构中的一部分,markword数据的长度在32位和64位的虚拟机（未开启压缩指针）中分别为32bit和64bit，它的**最后2bit是锁状态标志位**，用来标记当前对象的状态，对象的所处的状态，决定了markword存储的内容
 
-![1554958110706](E:\blog\_posts\1.Java基础\assets\1554958110706.png)
+![1554958110706](assets\1554958110706.png)
 
 
 
