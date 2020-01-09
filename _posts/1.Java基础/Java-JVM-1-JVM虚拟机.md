@@ -16,8 +16,6 @@ keywords:
 
 > JVM内存模型区别于Java内存模型JMM
 
-![img](assets/aHR0cHM6Ly91c2VyLWdvbGQtY2RuLnhpdHUuaW8vMjAxNy85LzQvZGQzYjE1YjNkODgyNmZhZWFlMjA2Mzk3NmZiOTkyMTM_aW1hZ2VWaWV3Mi8wL3cvMTI4MC9oLzk2MC9mb3JtYXQvd2VicC9pZ25vcmUtZXJyb3IvMQ)
-
 JVM**运行时**数据区域划分
 
 - 线程共享
