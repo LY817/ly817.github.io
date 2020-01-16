@@ -58,11 +58,16 @@ public static WeakReference<Object> ref = new WeakReference<Object>(new Object()
 
 #### 触发条件
 
-当新生代（Eden区和From Space）的内存空间不足，则会触发Minor GC
+当新生代（Eden区和From Space）的内存空间不足，不足以分配新的对象，则会触发Minor GC
 
 ### Major GC
 
 发生在老年代中的GC
+
+> 为什么Minor GC比Major GC快很多？
+>
+> 1. 因为新生代中的**大部分对象都是垃圾对象**，所以从GC Roots出发判断是否为垃圾对象的过程非常快
+> 2. Minor GC采用复制-清除算法，通过额外的空间（Survivor To区），避免的内存整理，提高了处理速度
 
 ## 算法划分
 
@@ -90,7 +95,13 @@ public static WeakReference<Object> ref = new WeakReference<Object>(new Object()
 基于**标记-清除**（Mark-Sweep）算法，设计目标是**尽量减少停顿时间**，这一点对于Web等反应时间敏感的应用非常重要
 但是，CMS采用的标记-清除算法，**存在着内存碎片化问题**，所以难以避免在长时间运行等情况下发生full GC，导致恶劣的停顿。另外，强调了并发（Concurrent），垃圾回收线程与系统工作线程**尽量同时执行**，所以CMS会占用更多CPU资源，并和用户线程争抢CPU资源。
 
-#### 实现过程
+为了避免碎片化导致频繁的GC，CMS GC会在垃圾回收完成后，进行一次“Stop the World”，进行内存整理
+
+使用`-XX:UseCMSCompactAtFullCollection`控制是否开启内存整理，默认情况下开启
+
+使用`-XX:CMSFullGCsBeforeCompaction`控制每执行多少次Full GC 执行一次内存整理。默认是0，表示每次Full GC之后都会进行一次内存整理。
+
+#### 执行过程
 
 ##### 初始标记
 
@@ -109,6 +120,14 @@ public static WeakReference<Object> ref = new WeakReference<Object>(new Object()
 ##### 并发清理
 
 退出"Stop the World"，开始清理被标记为垃圾的对象
+
+##### Concurrent Mode Failure
+
+`-XX:CMSInitiatingOccupancyFaction` 默认为92% 开启执行CMS GC的
+
+为并发标记过程中可能新加入老年代的对象预留空间
+
+当**并发清理**期间，预留的空间不足以存放下要进入老年代的对象，引发“Concurrent Mode Failure”。会放弃CMS GC，改用Serial Old GC，“Stop the World”之后重新单线程执行一次垃圾回收过程
 
 ### Parrallel GC
 
