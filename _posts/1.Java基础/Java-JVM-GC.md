@@ -69,37 +69,41 @@ public static WeakReference<Object> ref = new WeakReference<Object>(new Object()
 > 1. 因为新生代中的**大部分对象都是垃圾对象**，所以从GC Roots出发判断是否为垃圾对象的过程非常快
 > 2. Minor GC采用复制-清除算法，通过额外的空间（Survivor To区），避免的内存整理，提高了处理速度
 
-## 算法划分
+## 垃圾回收器类型
 
 ### Serial GC
 
 `-XX:+UseSerialGC`
+
 它是最古老的垃圾收集器，“Serial”体现在其收集工作是**单线程**的，并且在进行垃圾收集过程中，会进入臭名昭著的“Stop-The-World” 状态。当然，其单线程设计也意味着精简的GC实现，无需维护复杂的数据结构，初始化也简单，所以一直是Client模式下JVM的默认选项。
-从年代的角度，通常将其老年代实现单独称作Serial Old，它采用了标记-整理（Mark-Compact）算法，区别于新生代的复制算法。
+
+分为年轻代和老年代的实现：年轻代实现使用的是复制算法；老年代实现单独称作Serial Old，它采用了标记-整理（Mark-Compact）算法
 
 ### ParNew GC
 
+新生代GC实现
+
 `-XX:+UseParNewGC`
-是个新生代GC实现，它实际是Serial GC的**多线程**版本，最常见的应用场景是配合老年代的CMS GC工作
+
+是Serial GC的**多线程**版本
+
+最常见的应用场景是配合老年代的CMS GC工作，利用多线程占用更多的计算资源来降低GC对系统带来的卡顿
 
 ### CMS（Concurrent Mark Sweep） GC
 
-> 老年代GC算法
->
+老年代GC算法
+
 > 特点
 >
 > - 标记-清除 有是碎片
-> - 减少"Stop the World"
+>- 减少"Stop the World"
 
 `-XX:+UseConcMarkSweepGC`
+
 基于**标记-清除**（Mark-Sweep）算法，设计目标是**尽量减少停顿时间**，这一点对于Web等反应时间敏感的应用非常重要
-但是，CMS采用的标记-清除算法，**存在着内存碎片化问题**，所以难以避免在长时间运行等情况下发生full GC，导致恶劣的停顿。另外，强调了并发（Concurrent），垃圾回收线程与系统工作线程**尽量同时执行**，所以CMS会占用更多CPU资源，并和用户线程争抢CPU资源。
+但是，CMS采用的标记-清除算法，**存在着内存碎片化问题**，为了避免碎片化导致频繁的GC，CMS GC会在垃圾回收完成后，进行一次“Stop the World”，进行内存整理。
 
-为了避免碎片化导致频繁的GC，CMS GC会在垃圾回收完成后，进行一次“Stop the World”，进行内存整理
-
-使用`-XX:UseCMSCompactAtFullCollection`控制是否开启内存整理，默认情况下开启
-
-使用`-XX:CMSFullGCsBeforeCompaction`控制每执行多少次Full GC 执行一次内存整理。默认是0，表示每次Full GC之后都会进行一次内存整理。
+> 另外，强调了并发（Concurrent），垃圾回收线程与系统工作线程**尽量同时执行**，所以CMS会占用更多CPU资源，并和用户线程争抢CPU资源。
 
 #### 执行过程
 
@@ -129,14 +133,53 @@ public static WeakReference<Object> ref = new WeakReference<Object>(new Object()
 
 当**并发清理**期间，预留的空间不足以存放下要进入老年代的对象，引发“Concurrent Mode Failure”。会放弃CMS GC，改用Serial Old GC，“Stop the World”之后重新单线程执行一次垃圾回收过程
 
+##### *内存整理
+
+CMS GC采用标记-清除算法，会产生内存碎片。为了防止积累的内存碎片导致Full GC，会定时在CMS GC完成后，对老年代进行整理
+
+使用`-XX:UseCMSCompactAtFullCollection`控制是否开启内存整理，默认情况下开启
+
+使用`-XX:CMSFullGCsBeforeCompaction`控制每执行多少次Full GC 执行一次内存整理。默认是0，表示每次Full GC之后都会进行一次内存整理。
+
 ### Parrallel GC
 
+新生代和老年代
+
 `-XX:+UseParallelGC`
-在早期JDK 8等版本中，它是server模式JVM的默认GC选择，也被称作是吞吐量优先的GC。它的算法和Serial GC比较相似，尽管实现要复杂的多，其特点是新生代和老年代GC都是并行进行的，在常见的服务器环境中更加高效。
+
+在早期JDK 8等版本中，它是server模式JVM的默认GC选择，也被称作是吞吐量优先的GC。它的算法和Serial GC比较相似，尽管实现要复杂的多，其特点是**新生代和老年代GC都是并行进行的**，在常见的服务器环境中更加高效。
+
+
 
 ### G1 GC
 
-种兼顾吞吐量和停顿时间的GC实现，是Oracle JDK 9以后的默认GC选项。G1可以直观的设定停顿时间的目标，相比于CMS GC，G1未必能做到CMS在最好情况下的延时停顿，但是最差情况要好很多。
+新生代和老年代
+
+`-XX:+UseG1GC`
+
+种兼顾吞吐量和停顿时间的GC实现，是Oracle JDK 9以后的默认GC选项。G1可以**直观的设定停顿时间的目标**，相比于CMS GC，G1未必能做到CMS在最好情况下的延时停顿，但是最差情况要好很多。
+
+#### 实现原理
+
+将堆内存拆分成多个大小相等的**Region**，垃圾回收时不区分年轻代和老年代。G1中堆内存的年轻代和老年代只是逻辑上的概念（某一个region可能现在是用来存放新生代的对象，一段时间之后，被用来存放老年代的对象。**不存在新生代和老年代的比例**）
+
+##### Region
+
+G1收集器将堆内存拆分成多个大小相等的**Region**，动态转移给新生代或者老年代，按需分配
+
+##### 回收价值
+
+G1收集器会追踪每一个Region中需要回收的对象大小，以及对这个region进行垃圾回收预计需要多长时间
+
+最后在垃圾回收的时候，尽量把垃圾回收对系统造成的影响控制在你指定的时间范围内，同时在有限的时间内尽量回收尽可能多的垃圾对象
+
+#### 内存分配
+
+设置为G1回收期，默认配置下，会根据分配堆内存的大小，平均分成2048个Region
+
+或者可以通过`-XX:G1HeapRegionSize`来指定每个Region的大小
+
+初始状态，新生代的region占总体的5%
 
 # GC算法
 
