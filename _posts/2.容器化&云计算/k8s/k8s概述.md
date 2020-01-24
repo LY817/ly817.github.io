@@ -1,18 +1,14 @@
 Kubernetes 是一个开源的，用于管理云平台中多个主机上的容器化的应用， Kubernetes 的目标是让部署容器化的应用简单并且高效, Kubernetes 提供了应用部署，规划，更新，维护的一种机制 
 
-# 概念定义
+# 概念
 
-## service
-
-封装多个标签相同的pod，对外提供服务，负载均衡
+![image-20200122202521881](assets\image-20200122202521881.png)
 
 ## Pod
 
 在 Kubernetes 中，最小的管理单元不是一个个独立的容器，而是 Pod 
 
 Pod资源对象是一种集合了一个或多个应用容器、存储资源、专用ip、以及支撑运行的其他选项的逻辑组件
-
-![img](assets\1349539-20190225094840507-1212558195.png)
 
 > Pod其实就是一个应用程序运行的单一实例，它通常由共享资源且关系紧密的一个或多个应用容器组成
 >
@@ -30,31 +26,39 @@ Pod资源对象是一种集合了一个或多个应用容器、存储资源、�
 
 ##### ReplicaSet
 
-##### Deployment
+##  service
+
+封装多个标签相同的pod，对外提供服务，负载均衡
 
 
 
-# 组件结构
+# 组件
 
-k8s集群分为master节点和工作节点
+k8s集群分为master和worker节点
 
-## Master节点
+## Master node
 
 管理整个集群的运行
 
 ### APIServer
 
-作为整个集群的网关，所有服务访问的统一入口
-
-### Sheduler
-
-负责接收任务，选择合适的工作节点分配任务
-
-> 将合适的资源分配给任务
+作为整个集群的网关，提供资源操作的统一入口，提供认证授权、访问控制，API注册和发现等机制
 
 ### Controller Manager
 
-维护基本期望数目
+负责维护集群的状态，负责维护各种k8s对象（概念中提到的pod、service），对应pod controller、service controller、replication controller
+
+比如故障检测、自动扩展、滚动更新
+
+
+
+### Scheduler 调度器
+
+负责接收任务，进行资源的调度
+
+收集所有worker 节点的资源信息如内存、CPU的占用情况，以及节点上已运行了哪些服务。当需要创建pod时，根据调度策略如预选策略和优选策略，为pod分配合适的work node。
+
+Scheduler将pod-work node的对应关系通知api server，api server会将对应关系存储在ETCD中
 
 ### etcd
 
@@ -64,7 +68,7 @@ k8s集群分为master节点和工作节点
 
 - Flannel：容器的虚拟网络IP分配对应关系
 
-## 工作节点
+## worker node
 
 运行容器，与docker api进行交互
 
@@ -72,14 +76,15 @@ k8s集群分为master节点和工作节点
 
 直接与容器引擎（如docker）交互，实现容器的生命周期管理
 
+管理容器的volume（CVI）和网络（CNI）
+
 ### kube-proxy
 
-负责pod与pod之间的通信
+负责写入规则到IPTABLES、ipvs，实现服务映射访问，为service提供集群内部的服务发现和负载均衡
 
-> 负责写入规则到IPTABLES、ipvs，实现服务映射访问
+### docker
 
-
-### docker引擎
+应用的载体
 
 ## 重要插件
 
@@ -93,6 +98,8 @@ k8s集群分为master节点和工作节点
 
 ### Ingress Controller
 
+为服务提供外网入口
+
 ### Fedetation
 
 提供跨集群中心多K8S统一管理
@@ -103,7 +110,9 @@ k8s集群分为master节点和工作节点
 
 ### ELK
 
-日志统一分析
+Fluentd-elasticsearch
+
+日志统一的采集、存储和查询
 
 # 网络通信
 
