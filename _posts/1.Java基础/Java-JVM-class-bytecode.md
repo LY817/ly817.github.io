@@ -24,6 +24,20 @@ Class文件是一组以8位二进制数为基础单位的二进制流
 
 ## 文件结构
 
+```java
+public class Test {
+    public static void main(String[] args) {
+        String str = "Hello";       
+    } 
+}
+```
+
+下图为Test文件编译后的字节码文件结构
+
+![img](Java-JVM-class-bytecode.assets/1177828-20170929184033950-619493112.png)
+
+
+
 这种数据结构，类似C语言结构体。这个结构体中只有两种数据类型：**无符号数**和**表**，后面的解析都要以这两种数据类型为基础
 
 ```

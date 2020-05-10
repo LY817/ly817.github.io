@@ -114,7 +114,23 @@ Indexed Sequential Access Method
 
 用于记录修改后的状态（sql执行结果，存在于缓存中，还未写入到磁盘）
 
-> 当事务的所有操作都成功，**一起写入磁盘**
+>  `innodb_flush_log_at_trx_commit` 
+>
+> InnoDB刷盘策略（类似RocketMQ的同步刷盘和异步刷盘）
+>
+> 0：log buffer将每秒一次地写入log file中，并且log file的flush(刷到磁盘)操作同时进行。该模式下在事务提交的时候，不会主动触发写入磁盘的操作。
+>
+> 1：**每次事务提交**时MySQL都会把log buffer的数据写入log file，并且flush(刷到磁盘)中去，该模式为系统默认。
+>
+> 2：每次事务提交时MySQL都会把log buffer的数据写入log file，但是flush(刷到磁盘)操作并不会同时进行。该模式下，MySQL会每秒执行一次 flush(刷到磁盘)操作。
+>
+> - 1不会丢失数据 但是性能最差
+>
+> -  0、2先写入到系统缓存中，每隔一秒批量写入磁盘，提高io效率
+>
+>   如果断电或者宕机会丢失这一秒内的数据
+
+![image-20200207112222656](MySQL-存储引擎概述&InnoDB.assets/image-20200207112222656.png)
 
 #### 锁 【隔离性】
 

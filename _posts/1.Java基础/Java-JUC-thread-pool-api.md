@@ -142,13 +142,16 @@ ThreadPoolExecutor(int corePoolSize,
 
 - `workQueue` 用于存放任务的阻塞队列（等待队列）
 
-- `handler` 当队列和最大线程池都满了之后的**饱和策略**
+  存放被提交但尚未被执行的任务
+
+- `handler` RejectedExecutionHandler 当队列和最大线程池都满了之后的**饱和策略**
+  
   - AbortPolicy：直接抛出异常（默认策略）
   - CallerRunsPolicy：使用调用者所在的线程来执行任务
   - DiscardOldestPolicy：丢弃队列中靠最前的任务，并执行当前任务
-  - DiscardPolicy：直接丢弃任务
-
-- `threadFactory`：创建新线程的工程类，默认为Executors.defaultThreadFactory()
+- DiscardPolicy：直接丢弃任务
+  
+- `threadFactory`：创建新线程的工厂类，默认为Executors.defaultThreadFactory()
 
 ### 状态转换
 

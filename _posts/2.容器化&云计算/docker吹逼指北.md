@@ -34,6 +34,8 @@
 
 Docker守护进程，也就是Server端，Server端可以部署在远程，也可以部署在本地，因为Server端与客户端(Docker Client)是**通过Rest API进行通信**
 
+> k8s也使用相同的CS架构，kubectl通过RESTful与集群中master节点上的API Server进行交互
+
 ### docker CLI
 
 实现容器和镜像的管理，为用户提供统一的操作界面（命令行交互）

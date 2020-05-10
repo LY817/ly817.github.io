@@ -2,11 +2,25 @@
 
 ### 前缀
 
-`-X` 非标准选项
+#### 标准参数
 
-`-XX` 非稳定选项
+-version
 
-### 开启/关闭配置
+-help
+
+#### `-X` 非标准选项
+
+-Xint 解释执行
+
+-Xcomp 编译执行
+
+-Xmixed 混合模式执行
+
+#### `-XX` 非稳定选项
+
+
+
+### 开启/关闭配置 Boolean类型
 
 +表示开启 -表示关闭
 
@@ -15,7 +29,7 @@
 -XX:-UseCompressedOops # 表示关闭 压缩指针
 ```
 
-### 设置参数值
+### 设置参数值 KV类型
 
 `-XX:PermSize=256M`
 
@@ -64,3 +78,12 @@
 
 `-Xss`  每个线程方法栈内存大小
 
+# 查看
+
+`java -XX:+PrintFlagsInital`
+
+JVM初始化参数
+
+`java -XX:+PrintFlagsFinal`
+
+查看最终参数 使用`:=`区分时候修改过
